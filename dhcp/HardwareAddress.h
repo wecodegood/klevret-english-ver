@@ -30,7 +30,14 @@ enum class HardwareAddressType : uint8_t{
     Asynchronous_Transmission_Mode_ATM_21
 };
 
-uint8_t get_hardware_address_length(HardwareAddressType htype);
+constexpr int get_hardware_address_length(HardwareAddressType htype){
+    switch (htype)
+    {
+    case HardwareAddressType::Ethernet_10Mb: return 6;
+
+    }
+    return 0;
+}
 
 constexpr int DHCP_HARDWARE_ADDRESS_MAX_LENGTH = 16;
 using chaddr_t = std::array<uint8_t, DHCP_HARDWARE_ADDRESS_MAX_LENGTH>;
@@ -46,6 +53,6 @@ public:
     MacAddress(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
     virtual chaddr_t to_chaddr() override;
 
-    std::array<uint8_t, 6> data;
-    const uint8_t address_length = get_hardware_address_length(HardwareAddressType::Ethernet_10Mb);
+    const static uint8_t address_length = get_hardware_address_length(HardwareAddressType::Ethernet_10Mb);
+    std::array<uint8_t, address_length> data;
 };

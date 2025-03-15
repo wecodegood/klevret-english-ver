@@ -8,11 +8,12 @@
 #include <vector>
 
 // RFC 2131, page 10
-enum class MessageType : uint8_t{
+enum class DhcpMessageType : uint8_t{
     BOOTREQUEST = 1,
     BOOTREPLY = 2
 };
 
+constexpr int DHCP_MESSAGE_MIN_LENGTH = 236;
 
 // RFC 2131, page 10
 struct DhcpMessage{
@@ -20,7 +21,7 @@ struct DhcpMessage{
     DhcpMessage(std::vector<uint8_t> data);
     std::vector<uint8_t> to_network_data();
 
-    MessageType op;
+    DhcpMessageType op;
     HardwareAddressType htype;
     uint8_t hlen;
     uint8_t hops;
