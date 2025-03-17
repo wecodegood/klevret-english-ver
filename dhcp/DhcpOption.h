@@ -50,6 +50,9 @@ using dhcp_option_field_real_value_t = std::variant<
 
 struct DhcpOptionField{
     DhcpOptionField(DhcpOptionFieldType type, bool is_list, int min_len, IntConstraint int_constraint);
+    void set_real_value(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    int64_t get_one_element_payload_length_in_bytes() const;
+
     DhcpOptionFieldType type = DhcpOptionFieldType::NONE;
     bool is_list = false;
     int min_len = 0; // for arrays and lists of fields
