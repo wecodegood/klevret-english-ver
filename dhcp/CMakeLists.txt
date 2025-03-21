@@ -10,4 +10,7 @@ add_executable(dhcp-server
     DhcpMessage.cpp
     DhcpOption.cpp
     HardwareAddress.cpp
-    IpAddress.cpp)
+    IpAddress.cpp
+    endians.cpp
+
+)

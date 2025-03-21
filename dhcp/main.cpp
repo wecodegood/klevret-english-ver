@@ -40,4 +40,7 @@ int main(){
     DhcpMessage dhcp_message(dhcp_message_data);
     std::cout << "DHCP server started\n";
     std::cout << dhcp_message.yiaddr.to_string() << "\n";
+    for (auto option : dhcp_message.options){
+        std::cout << option.description.code << "\n";
+    }
 }
