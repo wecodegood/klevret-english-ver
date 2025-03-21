@@ -5,6 +5,7 @@
 #include <variant>
 #include <string>
 #include "IpAddress.h"
+#include <map>
 
 enum class IntConstraintType{
     NONE,
@@ -23,7 +24,7 @@ struct IntConstraint{
     std::vector<uint64_t> allowed_values; // for enum
 };
 
-enum class DhcpOptionFieldType{
+enum class DhcpOptionPayloadType{
     NONE,
     VENDOR_SPECIFIC_FIELD,
     BYTE_ARRAY,
@@ -39,35 +40,45 @@ enum class DhcpOptionFieldType{
 };
 
 using dhcp_option_field_real_value_t = std::variant<
-    int64_t,
-    uint64_t,
+    int32_t,
+    uint32_t,
+    uint16_t,
+    uint8_t,
     std::vector<uint8_t>,
     std::basic_string<uint8_t>,
     IpAddress,
-    subnet_mask_t,
     bool
 >;
 
-struct DhcpOptionField{
-    DhcpOptionField(DhcpOptionFieldType type, bool is_list, int min_len, IntConstraint int_constraint);
-    void set_real_value(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+struct DhcpOptionPayloadDescription{
+    DhcpOptionPayloadDescription();
+    DhcpOptionPayloadDescription(DhcpOptionPayloadType type, bool is_list, int min_len, IntConstraint int_constraint);
     int64_t get_one_element_payload_length_in_bytes() const;
+    static DhcpOptionPayloadDescription no_payload();
+    bool is_correct_uint(uint32_t value);
+    bool is_correct_int(int32_t value);
 
-    DhcpOptionFieldType type = DhcpOptionFieldType::NONE;
+    DhcpOptionPayloadType type = DhcpOptionPayloadType::NONE;
     bool is_list = false;
     int min_len = 0; // for arrays and lists of fields
     IntConstraint int_constraint; // for int & uint & uint_enum
-    std::vector<dhcp_option_field_real_value_t> real_values;
 };
 
 constexpr int VARIABLE_DHCP_OPTION_LENGTH = -1;
 
-struct DhcpOption{
-    DhcpOption(int code, int64_t length, std::vector<DhcpOptionField> fields);
+struct DhcpOptionDescription{
+    DhcpOptionDescription()=default;
+    DhcpOptionDescription(int code, int64_t length, DhcpOptionPayloadDescription payload_description);
     int code = 0;
     int64_t length = 0;
-    std::vector<DhcpOptionField> fields;
+    DhcpOptionPayloadDescription payload_description;
 };
 
-// данные опции являются и описанием DHCP опций из стандарта RFC 2132 и могут содержать реальное значение
-extern std::vector<DhcpOption> options;
+extern std::map<int, DhcpOptionDescription> options_descriptions;
+
+struct DhcpOption{
+    DhcpOption(int code, int64_t length, std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    int64_t real_length;
+    DhcpOptionDescription description;
+    std::vector<dhcp_option_field_real_value_t> real_values;
+};

@@ -57,6 +57,19 @@ DhcpMessage::DhcpMessage(std::vector<uint8_t> data)
     iter += 64;
     file = std::basic_string<uint8_t>(iter, iter + 128);
     iter += 128;
+    // дальше опции
+    if (data.size() < DHCP_MESSAGE_MIN_LENGTH + 4){
+        return;
+    }
+    // проверяем на magic cookie 99, 130, 83, 99 (RFC 2131 стр 13 п 3)
+    if (*iter != 99 || *(iter + 1) != 130 || *(iter + 2) != 83 || *(iter + 3) != 99){
+        throw std::runtime_error("неверное значение magic cookie");
+    }
+    iter += 4;
+    while (iter != data.end()){
+        // ToDo
+        ++iter;
+    }
 }
 
 std::vector<uint8_t> DhcpMessage::to_network_data(){
