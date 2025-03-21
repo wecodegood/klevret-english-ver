@@ -13,13 +13,13 @@ IntConstraint IntConstraint::no_constraint(){
 }
 
 DhcpOptionPayloadDescription::DhcpOptionPayloadDescription()
-    :   type(DhcpOptionPayloadType::NONE), is_list(false), min_len(0), int_constraint(IntConstraint::no_constraint())
+    :   type(DhcpOptionPayloadType::NONE), is_list(false), min_len_in_elements(0), int_constraint(IntConstraint::no_constraint())
 {
 
 }
 
-DhcpOptionPayloadDescription::DhcpOptionPayloadDescription(DhcpOptionPayloadType type, bool is_list, int min_len, IntConstraint int_constraint)
-    :   type(type), is_list(is_list), min_len(min_len), int_constraint(int_constraint)
+DhcpOptionPayloadDescription::DhcpOptionPayloadDescription(DhcpOptionPayloadType type, bool is_list, int min_len_in_elements, IntConstraint int_constraint)
+    :   type(type), is_list(is_list), min_len_in_elements(min_len_in_elements), int_constraint(int_constraint)
 {
 
 }
@@ -95,8 +95,8 @@ bool DhcpOptionPayloadDescription::is_correct_int(int32_t value){
     return false;
 }
 
-DhcpOptionDescription::DhcpOptionDescription(int code, int64_t length, DhcpOptionPayloadDescription payload_description)
-    :   code(code), length(length), payload_description(payload_description)
+DhcpOptionDescription::DhcpOptionDescription(int code, int64_t payload_length, DhcpOptionPayloadDescription payload_description)
+    :   code(code), payload_length(payload_length), payload_description(payload_description)
 {
 
 }
@@ -107,18 +107,29 @@ std::map<int, DhcpOptionDescription> options_descriptions = {
     {1, DhcpOptionDescription{1, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::SUBNET_MASK, false, 0, IntConstraint::no_constraint()}}},
     {2, DhcpOptionDescription{2, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::INT_32, false, 0, IntConstraint::no_constraint()}}},
     {3, DhcpOptionDescription{3, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
-    {4, DhcpOptionDescription{4, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}}
+    {4, DhcpOptionDescription{4, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {5, DhcpOptionDescription{5, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {6, DhcpOptionDescription{6, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {7, DhcpOptionDescription{7, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {8, DhcpOptionDescription{8, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {9, DhcpOptionDescription{9, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {10, DhcpOptionDescription{10, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {11, DhcpOptionDescription{11, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {12, DhcpOptionDescription{12, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {13, DhcpOptionDescription{13, 2, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_16, false, 0, IntConstraint::no_constraint()}}},
+    {14, DhcpOptionDescription{14, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 0, IntConstraint::no_constraint()}}},
+    //ToDo добавить в конструктор PayloadDescription функцию валидатор для более сложных валидаций как у 12 опции
 };
 
 
 // итераторы на полезную нагрузку опции, не захватывая первые два байта кода и длины опции
-DhcpOption::DhcpOption(int code, int64_t length, std::vector<uint8_t>::iterator payload_begin, std::vector<uint8_t>::iterator payload_end){
+DhcpOption::DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_t>::iterator payload_begin, std::vector<uint8_t>::iterator payload_end){
     description = options_descriptions.at(code);
-    if (description.length == VARIABLE_DHCP_OPTION_LENGTH){
-        real_length = length;
+    if (description.payload_length == VARIABLE_DHCP_OPTION_LENGTH){
+        this->real_payload_length = real_payload_length;
     } else {
-        real_length = description.length;
-        if (description.length != length){
+        this->real_payload_length = description.payload_length;
+        if (description.payload_length != real_payload_length){
             throw std::runtime_error("несовпадение реальной длины свойства и длины в стандарте");
         }
     }
@@ -127,12 +138,12 @@ DhcpOption::DhcpOption(int code, int64_t length, std::vector<uint8_t>::iterator 
         case DhcpOptionPayloadType::BYTE_ARRAY:{
             std::vector<uint8_t> byte_array;
             byte_array.insert(byte_array.begin(), payload_begin, payload_end);
-            if (description.length == VARIABLE_DHCP_OPTION_LENGTH
-                && byte_array.size() < description.payload_description.min_len)
+            if (description.payload_length == VARIABLE_DHCP_OPTION_LENGTH
+                && byte_array.size() < description.payload_description.min_len_in_elements)
             {
                 throw std::runtime_error("длина опции меньше чем минимальная");
             } else {
-                if (description.length != byte_array.size()){
+                if (description.payload_length != byte_array.size()){
                     throw std::runtime_error{"несовпадение длины"};
                 }
             }

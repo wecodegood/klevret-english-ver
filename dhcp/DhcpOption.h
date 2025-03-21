@@ -52,7 +52,7 @@ using dhcp_option_field_real_value_t = std::variant<
 
 struct DhcpOptionPayloadDescription{
     DhcpOptionPayloadDescription();
-    DhcpOptionPayloadDescription(DhcpOptionPayloadType type, bool is_list, int min_len, IntConstraint int_constraint);
+    DhcpOptionPayloadDescription(DhcpOptionPayloadType type, bool is_list, int min_len_in_elements, IntConstraint int_constraint);
     int64_t get_one_element_payload_length_in_bytes() const;
     static DhcpOptionPayloadDescription no_payload();
     bool is_correct_uint(uint32_t value);
@@ -60,7 +60,7 @@ struct DhcpOptionPayloadDescription{
 
     DhcpOptionPayloadType type = DhcpOptionPayloadType::NONE;
     bool is_list = false;
-    int min_len = 0; // for arrays and lists of fields
+    int min_len_in_elements = 0; // for arrays and lists of fields
     IntConstraint int_constraint; // for int & uint & uint_enum
 };
 
@@ -68,17 +68,17 @@ constexpr int VARIABLE_DHCP_OPTION_LENGTH = -1;
 
 struct DhcpOptionDescription{
     DhcpOptionDescription()=default;
-    DhcpOptionDescription(int code, int64_t length, DhcpOptionPayloadDescription payload_description);
+    DhcpOptionDescription(int code, int64_t payload_length, DhcpOptionPayloadDescription payload_description);
     int code = 0;
-    int64_t length = 0;
+    int64_t payload_length = 0;
     DhcpOptionPayloadDescription payload_description;
 };
 
 extern std::map<int, DhcpOptionDescription> options_descriptions;
 
 struct DhcpOption{
-    DhcpOption(int code, int64_t length, std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
-    int64_t real_length;
+    DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    int64_t real_payload_length;
     DhcpOptionDescription description;
     std::vector<dhcp_option_field_real_value_t> real_values;
 };

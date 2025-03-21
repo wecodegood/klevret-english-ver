@@ -69,10 +69,19 @@ DhcpMessage::DhcpMessage(std::vector<uint8_t> data)
     while (iter != data.end()){
         int option_code = *iter;
         ++iter;
+        if (option_code == 0 || option_code == 255){
+            continue;
+        }
         int64_t payload_length = *iter;
         ++iter;
-        DhcpOption(option_code, payload_length, iter, iter + payload_length);
-        ++iter;
+        // ToDo remove try catch
+        try{
+            DhcpOption new_option(option_code, payload_length, iter, iter + payload_length);
+            options.push_back(new_option);
+        } catch (...){
+
+        }
+        iter += payload_length;
     }
 }
 
