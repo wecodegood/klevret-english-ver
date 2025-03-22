@@ -11,6 +11,5 @@ add_executable(dhcp-server
     DhcpOption.cpp
     HardwareAddress.cpp
     IpAddress.cpp
-    endians.cpp
 
 )

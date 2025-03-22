@@ -167,14 +167,15 @@ DhcpOption::DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_
             {
                 case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
                 case DhcpOptionPayloadType::SUBNET_MASK: process_subnet_mask(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                // Пришлось закомментировать, чтобы сборка прошла успешно.
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                //case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
             }
             iter += element_size_in_bytes;
         }
@@ -215,13 +216,13 @@ void DhcpOption::process_ip_address(std::vector<uint8_t>::iterator begin, std::v
 }
 
 void DhcpOption::process_subnet_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    subnet_mask_t subnet_mask = uint32_big_endian_to_host_endian(begin, end);
+    subnet_mask_t subnet_mask = network_to_host_endian<subnet_mask_t>(begin, end);
     real_values.push_back(subnet_mask);
 }
 
 void DhcpOption::process_ip_address_with_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
     IpAddress ip_address{begin, begin + 4};
-    subnet_mask_t subnet_mask = uint32_big_endian_to_host_endian(begin + 4, end);
+    subnet_mask_t subnet_mask = network_to_host_endian<subnet_mask_t>(begin + 4, end);
     real_values.push_back(std::pair{ip_address, subnet_mask});
 }
 
@@ -240,7 +241,7 @@ void DhcpOption::process_uint8(std::vector<uint8_t>::iterator iter){
 }
 
 void DhcpOption::process_uint16(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    uint16_t value = uint16_big_endian_to_host_endian(begin, end);
+    uint16_t value = network_to_host_endian<uint16_t>(begin, end);
     if (!description.payload_description.is_correct_uint(value)){
         throw std::runtime_error("Значение опции не соответствует ограничениям");
     }
@@ -248,7 +249,7 @@ void DhcpOption::process_uint16(std::vector<uint8_t>::iterator begin, std::vecto
 }
 
 void DhcpOption::process_uint32(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    uint32_t value = uint32_big_endian_to_host_endian(begin, end);
+    uint32_t value = network_to_host_endian<uint32_t>(begin, end);
     if (!description.payload_description.is_correct_uint(value)){
         throw std::runtime_error("Значение опции не соответствует ограничениям");
     }
@@ -256,7 +257,7 @@ void DhcpOption::process_uint32(std::vector<uint8_t>::iterator begin, std::vecto
 }
 
 void DhcpOption::process_int32(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    int32_t value = int32_big_endian_to_host_endian(begin, end);
+    int32_t value = network_to_host_endian<int32_t>(begin, end);
     if (!description.payload_description.is_correct_int(value)){
         throw std::runtime_error("Значение опции не соответствует ограничениям");
     }
