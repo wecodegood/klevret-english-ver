@@ -31,6 +31,8 @@ enum class DhcpOptionPayloadType{
     STRING,
     IP_ADDRESS,
     SUBNET_MASK,
+    IP_ADDRESS_WITH_SUBNET_MASK,
+    TWO_IP_ADDRESSES,
     UINT_8,
     UINT_16,
     UINT_32,
@@ -47,14 +49,16 @@ using dhcp_option_field_real_value_t = std::variant<
     std::vector<uint8_t>,
     std::basic_string<uint8_t>,
     IpAddress,
+    std::pair<IpAddress, subnet_mask_t>,
+    std::pair<IpAddress, IpAddress>,
     bool
 >;
 
 struct DhcpOptionPayloadDescription{
     DhcpOptionPayloadDescription();
     DhcpOptionPayloadDescription(DhcpOptionPayloadType type, bool is_list, int min_len_in_elements, IntConstraint int_constraint);
-    int64_t get_one_element_payload_length_in_bytes() const;
     static DhcpOptionPayloadDescription no_payload();
+    int64_t get_one_element_payload_length_in_bytes() const;
     bool is_correct_uint(uint32_t value);
     bool is_correct_int(int32_t value);
 
@@ -76,9 +80,25 @@ struct DhcpOptionDescription{
 
 extern std::map<int, DhcpOptionDescription> options_descriptions;
 
-struct DhcpOption{
+class DhcpOption{
+public:
     DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
     int64_t real_payload_length;
     DhcpOptionDescription description;
     std::vector<dhcp_option_field_real_value_t> real_values;
+private:
+    void process_vendor_specific_field(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_byte_array(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_string(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_ip_address(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_subnet_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_ip_address_with_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_two_ip_addresses(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_uint8(std::vector<uint8_t>::iterator iter);
+    void process_uint16(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_uint32(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_int32(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
+    void process_flag(std::vector<uint8_t>::iterator iter);
+    void process_uint_enum(std::vector<uint8_t>::iterator iter);
+
 };

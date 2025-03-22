@@ -31,6 +31,8 @@ int64_t DhcpOptionPayloadDescription::get_one_element_payload_length_in_bytes() 
     case DhcpOptionPayloadType::FLAG: return 1;
     case DhcpOptionPayloadType::INT_32: return 4;
     case DhcpOptionPayloadType::IP_ADDRESS: return 4;
+    case DhcpOptionPayloadType::IP_ADDRESS_WITH_SUBNET_MASK: return 8;
+    case DhcpOptionPayloadType::TWO_IP_ADDRESSES: return 8;
     case DhcpOptionPayloadType::NONE: return 0;
     case DhcpOptionPayloadType::STRING: return 1;
     case DhcpOptionPayloadType::SUBNET_MASK: return 4;
@@ -117,8 +119,29 @@ std::map<int, DhcpOptionDescription> options_descriptions = {
     {11, DhcpOptionDescription{11, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
     {12, DhcpOptionDescription{12, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
     {13, DhcpOptionDescription{13, 2, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_16, false, 0, IntConstraint::no_constraint()}}},
-    {14, DhcpOptionDescription{14, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 0, IntConstraint::no_constraint()}}},
+    {14, DhcpOptionDescription{14, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
     //ToDo добавить в конструктор PayloadDescription функцию валидатор для более сложных валидаций как у 12 опции
+    {15, DhcpOptionDescription{15, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {16, DhcpOptionDescription{16, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, false, 0, IntConstraint::no_constraint()}}},
+    {17, DhcpOptionDescription{17, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {18, DhcpOptionDescription{18, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {19, DhcpOptionDescription{19, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {20, DhcpOptionDescription{20, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {21, DhcpOptionDescription{21, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS_WITH_SUBNET_MASK, true, 1, IntConstraint::no_constraint()}}},
+    {22, DhcpOptionDescription{22, 2, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_16, false, 0, IntConstraint{IntConstraintType::FROM_MIN, 576, 0, {}}}}},
+    {23, DhcpOptionDescription{23, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_8, false, 0, IntConstraint{IntConstraintType::RANGE, 1, 255, {}}}}},
+    {24, DhcpOptionDescription{24, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_32, false, 0, IntConstraint::no_constraint()}}},
+    {25, DhcpOptionDescription{25, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_16, true, 2, IntConstraint::no_constraint()}}},
+    {26, DhcpOptionDescription{26, 2, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_16, false, 0, IntConstraint{IntConstraintType::FROM_MIN, 68, 0, {}}}}},
+    {27, DhcpOptionDescription{27, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {28, DhcpOptionDescription{28, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, false, 0, IntConstraint::no_constraint()}}},
+    {29, DhcpOptionDescription{29, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {30, DhcpOptionDescription{30, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {31, DhcpOptionDescription{31, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {32, DhcpOptionDescription{32, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, false, 0, IntConstraint::no_constraint()}}},
+    {33, DhcpOptionDescription{33, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::TWO_IP_ADDRESSES, true, 1, IntConstraint::no_constraint()}}},
+
+
 };
 
 
@@ -133,90 +156,122 @@ DhcpOption::DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_
             throw std::runtime_error("несовпадение реальной длины свойства и длины в стандарте");
         }
     }
-    switch (description.payload_description.type)
-    {
-        case DhcpOptionPayloadType::BYTE_ARRAY:{
-            std::vector<uint8_t> byte_array;
-            byte_array.insert(byte_array.begin(), payload_begin, payload_end);
-            if (description.payload_length == VARIABLE_DHCP_OPTION_LENGTH
-                && byte_array.size() < description.payload_description.min_len_in_elements)
+    if (description.payload_description.type == DhcpOptionPayloadType::NONE){
+        throw std::runtime_error("Нельзя задать пустое значение");
+    }
+    if (description.payload_description.is_list){
+        auto iter = payload_begin;
+        auto element_size_in_bytes = description.payload_description.get_one_element_payload_length_in_bytes();
+        while (iter != payload_end){
+            switch (description.payload_description.type)
             {
-                throw std::runtime_error("длина опции меньше чем минимальная");
-            } else {
-                if (description.payload_length != byte_array.size()){
-                    throw std::runtime_error{"несовпадение длины"};
-                }
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::SUBNET_MASK: process_subnet_mask(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
             }
-            real_values.push_back(byte_array);
-            return;
+            iter += element_size_in_bytes;
         }
-        case DhcpOptionPayloadType::FLAG:{
-            bool value = *payload_begin;
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::INT_32:{
-            int32_t value = int32_big_endian_to_host_endian(payload_begin, payload_end);
-            if (!description.payload_description.is_correct_int(value)){
-                throw std::runtime_error("Значение опции не соответствует ограничениям");
-            }
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::IP_ADDRESS:{
-            IpAddress value(payload_begin, payload_end);
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::NONE:
-            throw std::runtime_error("Нельзя задать пустое значение");
-        case DhcpOptionPayloadType::STRING:{
-            std::basic_string<uint8_t>value(payload_begin, payload_end);
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::SUBNET_MASK:{
-            subnet_mask_t subnet_mask = uint32_big_endian_to_host_endian(payload_begin, payload_end);
-            real_values.push_back(subnet_mask);
-            return;
-        }
-        case DhcpOptionPayloadType::UINT_16:{
-            uint16_t value = uint16_big_endian_to_host_endian(payload_begin, payload_end);
-            if (!description.payload_description.is_correct_uint(value)){
-                throw std::runtime_error("Значение опции не соответствует ограничениям");
-            }
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::UINT_32:{
-            uint32_t value = uint32_big_endian_to_host_endian(payload_begin, payload_end);
-            if (!description.payload_description.is_correct_uint(value)){
-                throw std::runtime_error("Значение опции не соответствует ограничениям");
-            }
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::UINT_8:{
-            uint8_t value = *payload_begin;
-            if (!description.payload_description.is_correct_uint(value)){
-                throw std::runtime_error("Значение опции не соответствует ограничениям");
-            }
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::UINT_ENUM:{
-            uint8_t value = *payload_begin;
-            if (!description.payload_description.is_correct_uint(value)){
-                throw std::runtime_error("Значение опции не соответствует ограничениям");
-            }
-            real_values.push_back(value);
-            return;
-        }
-        case DhcpOptionPayloadType::VENDOR_SPECIFIC_FIELD:{
-            std::vector<uint8_t>value(payload_begin, payload_end);
-            real_values.push_back(value);
-            return;
-        }
+
+    } else {
+
     }
     throw std::runtime_error("Неизвестный тип поля DHCP свойства");
+}
+
+
+void DhcpOption::process_vendor_specific_field(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    std::vector<uint8_t>value(begin, end);
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_byte_array(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    std::vector<uint8_t> byte_array{begin, end};
+    if (description.payload_length == VARIABLE_DHCP_OPTION_LENGTH
+        && byte_array.size() < description.payload_description.min_len_in_elements)
+    {
+        throw std::runtime_error("длина опции меньше чем минимальная");
+    }
+    if (description.payload_length != byte_array.size()){
+        throw std::runtime_error{"несовпадение длины"};
+    }
+    real_values.push_back(byte_array);
+}
+
+void DhcpOption::process_string(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    std::basic_string<uint8_t>value(begin, end);
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_ip_address(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    IpAddress value(begin, end);
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_subnet_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    subnet_mask_t subnet_mask = uint32_big_endian_to_host_endian(begin, end);
+    real_values.push_back(subnet_mask);
+}
+
+void DhcpOption::process_ip_address_with_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    IpAddress ip_address{begin, begin + 4};
+    subnet_mask_t subnet_mask = uint32_big_endian_to_host_endian(begin + 4, end);
+    real_values.push_back(std::pair{ip_address, subnet_mask});
+}
+
+void DhcpOption::process_two_ip_addresses(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    IpAddress ip1(begin, begin + 4);
+    IpAddress ip2(begin + 4, end);
+    real_values.push_back(std::pair(ip1, ip2));
+}
+
+void DhcpOption::process_uint8(std::vector<uint8_t>::iterator iter){
+    uint8_t value = *iter;
+    if (!description.payload_description.is_correct_uint(value)){
+        throw std::runtime_error("Значение опции не соответствует ограничениям");
+    }
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_uint16(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    uint16_t value = uint16_big_endian_to_host_endian(begin, end);
+    if (!description.payload_description.is_correct_uint(value)){
+        throw std::runtime_error("Значение опции не соответствует ограничениям");
+    }
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_uint32(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    uint32_t value = uint32_big_endian_to_host_endian(begin, end);
+    if (!description.payload_description.is_correct_uint(value)){
+        throw std::runtime_error("Значение опции не соответствует ограничениям");
+    }
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_int32(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
+    int32_t value = int32_big_endian_to_host_endian(begin, end);
+    if (!description.payload_description.is_correct_int(value)){
+        throw std::runtime_error("Значение опции не соответствует ограничениям");
+    }
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_flag(std::vector<uint8_t>::iterator iter){
+    bool value = *iter;
+    real_values.push_back(value);
+}
+
+void DhcpOption::process_uint_enum(std::vector<uint8_t>::iterator iter){
+    uint8_t value = *iter;
+    if (!description.payload_description.is_correct_uint(value)){
+        throw std::runtime_error("Значение опции не соответствует ограничениям");
+    }
+    real_values.push_back(value);
 }
