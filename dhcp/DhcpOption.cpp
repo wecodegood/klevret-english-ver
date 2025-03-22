@@ -52,7 +52,8 @@ DhcpOptionPayloadDescription DhcpOptionPayloadDescription::no_payload(){
 
 
 bool DhcpOptionPayloadDescription::is_correct_uint(uint32_t value){
-    if (!(type == DhcpOptionPayloadType::UINT_32 || type == DhcpOptionPayloadType::UINT_16 || type == DhcpOptionPayloadType::UINT_8)){
+    if (!(type == DhcpOptionPayloadType::UINT_32 || type == DhcpOptionPayloadType::UINT_16
+        || type == DhcpOptionPayloadType::UINT_8 || type == DhcpOptionPayloadType::UINT_ENUM)){
         throw std::runtime_error("несоответствие типа DhcpOptionPayloadType");
     }
     switch (int_constraint.type)
@@ -181,9 +182,6 @@ std::map<int, DhcpOptionDescription> options_descriptions = {
     {59, DhcpOptionDescription{59, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_32, false, 0, IntConstraint::no_constraint()}}},
     {60, DhcpOptionDescription{60, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
     {61, DhcpOptionDescription{61, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::BYTE_ARRAY, false, 2, IntConstraint::no_constraint()}}},
-
-
-
 };
 
 
@@ -201,36 +199,37 @@ DhcpOption::DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_
     if (description.payload_description.type == DhcpOptionPayloadType::NONE){
         throw std::runtime_error("Нельзя задать пустое значение");
     }
-    if (description.payload_description.is_list){
-        auto iter = payload_begin;
-        auto element_size_in_bytes = description.payload_description.get_one_element_payload_length_in_bytes();
-        while (iter != payload_end){
-            switch (description.payload_description.type)
-            {
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::SUBNET_MASK: process_subnet_mask(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS_WITH_SUBNET_MASK: process_ip_address_with_mask(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::TWO_IP_ADDRESSES: process_two_ip_addresses(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::UINT_8: process_uint8(iter); break;
-                case DhcpOptionPayloadType::UINT_16: process_uint16(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::UINT_32: process_uint32(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::INT_32: process_int32(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::FLAG: process_flag(iter); break;
-                default: throw std::runtime_error("данный тип полезной нагрузки опции не может использоваться в списке");
-            }
-            iter += element_size_in_bytes;
-        }
 
-    } else {
-        switch (description.payload_description.type){
-            case DhcpOptionPayloadType::VENDOR_SPECIFIC_FIELD: process_vendor_specific_field(payload_begin, payload_end); break;
-            case DhcpOptionPayloadType::BYTE_ARRAY: process_byte_array(payload_begin, payload_end); break;
-            case DhcpOptionPayloadType::STRING: process_string(payload_begin, payload_end); break;
-            case DhcpOptionPayloadType::UINT_ENUM: process_uint_enum(payload_begin); break;
-            default: throw std::runtime_error("не могу обработать данный тип полезной нагрузки опции");
+    auto iter = payload_begin;
+    auto element_size_in_bytes = description.payload_description.get_one_element_payload_length_in_bytes();
+    while (iter != payload_end){
+        switch (description.payload_description.type)
+        {
+            case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+            case DhcpOptionPayloadType::SUBNET_MASK: process_subnet_mask(iter, iter + element_size_in_bytes); break;
+            case DhcpOptionPayloadType::IP_ADDRESS_WITH_SUBNET_MASK: process_ip_address_with_mask(iter, iter + element_size_in_bytes); break;
+            case DhcpOptionPayloadType::TWO_IP_ADDRESSES: process_two_ip_addresses(iter, iter + element_size_in_bytes); break;
+            case DhcpOptionPayloadType::UINT_8: process_uint8(iter); break;
+            case DhcpOptionPayloadType::UINT_16: process_uint16(iter, iter + element_size_in_bytes); break;
+            case DhcpOptionPayloadType::UINT_32: process_uint32(iter, iter + element_size_in_bytes); break;
+            case DhcpOptionPayloadType::INT_32: process_int32(iter, iter + element_size_in_bytes); break;
+            case DhcpOptionPayloadType::FLAG: process_flag(iter); break;
+            case DhcpOptionPayloadType::UINT_ENUM: process_uint_enum(iter); break;
+
+            case DhcpOptionPayloadType::VENDOR_SPECIFIC_FIELD:
+                process_vendor_specific_field(iter, payload_end);
+                return;
+            case DhcpOptionPayloadType::BYTE_ARRAY:
+                process_byte_array(iter, payload_end);
+                return;
+            case DhcpOptionPayloadType::STRING:
+                process_string(iter, payload_end);
+                return;
+
+            default: throw std::runtime_error("данный тип полезной нагрузки опции не может использоваться в списке");
         }
+        iter += element_size_in_bytes;
     }
-    throw std::runtime_error("Неизвестный тип поля DHCP свойства");
 }
 
 
