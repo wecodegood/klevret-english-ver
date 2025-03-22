@@ -140,6 +140,48 @@ std::map<int, DhcpOptionDescription> options_descriptions = {
     {31, DhcpOptionDescription{31, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
     {32, DhcpOptionDescription{32, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, false, 0, IntConstraint::no_constraint()}}},
     {33, DhcpOptionDescription{33, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::TWO_IP_ADDRESSES, true, 1, IntConstraint::no_constraint()}}},
+    {34, DhcpOptionDescription{34, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {35, DhcpOptionDescription{35, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_32, false, 0, IntConstraint::no_constraint()}}},
+    {36, DhcpOptionDescription{36, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {37, DhcpOptionDescription{37, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_8, false, 0, IntConstraint{IntConstraintType::FROM_MIN, 1, 0, {}}}}},
+    {38, DhcpOptionDescription{38, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_32, false, 0, IntConstraint::no_constraint()}}},
+    {39, DhcpOptionDescription{39, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::FLAG, false, 0, IntConstraint::no_constraint()}}},
+    {40, DhcpOptionDescription{40, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {41, DhcpOptionDescription{41, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {42, DhcpOptionDescription{42, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {43, DhcpOptionDescription{43, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::VENDOR_SPECIFIC_FIELD, false, 1, IntConstraint::no_constraint()}}},
+    {44, DhcpOptionDescription{44, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {45, DhcpOptionDescription{45, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {46, DhcpOptionDescription{46, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_ENUM, false, 0, IntConstraint{IntConstraintType::UINT_ENUM, 0, 0, {0x1, 0x2, 0x4, 0x8}}}}},
+    {47, DhcpOptionDescription{47, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {48, DhcpOptionDescription{48, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {49, DhcpOptionDescription{49, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {64, DhcpOptionDescription{64, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {65, DhcpOptionDescription{65, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {68, DhcpOptionDescription{68, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 0, IntConstraint::no_constraint()}}},
+    {69, DhcpOptionDescription{69, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {70, DhcpOptionDescription{70, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {71, DhcpOptionDescription{71, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {72, DhcpOptionDescription{72, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {73, DhcpOptionDescription{73, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {74, DhcpOptionDescription{74, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {75, DhcpOptionDescription{75, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {76, DhcpOptionDescription{76, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, true, 1, IntConstraint::no_constraint()}}},
+    {50, DhcpOptionDescription{50, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, false, 0, IntConstraint::no_constraint()}}},
+    {51, DhcpOptionDescription{51, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_32, false, 0, IntConstraint::no_constraint()}}},
+    {52, DhcpOptionDescription{52, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_ENUM, false, 0, IntConstraint{IntConstraintType::UINT_ENUM, 0, 0, {1, 2, 3}}}}},
+    {66, DhcpOptionDescription{66, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {67, DhcpOptionDescription{67, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {53, DhcpOptionDescription{53, 1, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_ENUM, false, 0, IntConstraint{IntConstraintType::UINT_ENUM, 0, 0, {1, 2, 3, 4, 5, 6, 7, 8}}}}},
+    {54, DhcpOptionDescription{54, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::IP_ADDRESS, false, 0, IntConstraint::no_constraint()}}},
+    {55, DhcpOptionDescription{55, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::BYTE_ARRAY, false, 1, IntConstraint::no_constraint()}}},
+    {56, DhcpOptionDescription{56, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {57, DhcpOptionDescription{57, 2, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_16, false, 0, IntConstraint{IntConstraintType::FROM_MIN, 576, 0, {}}}}},
+    {58, DhcpOptionDescription{58, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_32, false, 0, IntConstraint::no_constraint()}}},
+    {59, DhcpOptionDescription{59, 4, DhcpOptionPayloadDescription{DhcpOptionPayloadType::UINT_32, false, 0, IntConstraint::no_constraint()}}},
+    {60, DhcpOptionDescription{60, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::STRING, false, 1, IntConstraint::no_constraint()}}},
+    {61, DhcpOptionDescription{61, VARIABLE_DHCP_OPTION_LENGTH, DhcpOptionPayloadDescription{DhcpOptionPayloadType::BYTE_ARRAY, false, 2, IntConstraint::no_constraint()}}},
+
 
 
 };
@@ -167,20 +209,26 @@ DhcpOption::DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_
             {
                 case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
                 case DhcpOptionPayloadType::SUBNET_MASK: process_subnet_mask(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
-                case DhcpOptionPayloadType::IP_ADDRESS: process_ip_address(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::IP_ADDRESS_WITH_SUBNET_MASK: process_ip_address_with_mask(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::TWO_IP_ADDRESSES: process_two_ip_addresses(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::UINT_8: process_uint8(iter); break;
+                case DhcpOptionPayloadType::UINT_16: process_uint16(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::UINT_32: process_uint32(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::INT_32: process_int32(iter, iter + element_size_in_bytes); break;
+                case DhcpOptionPayloadType::FLAG: process_flag(iter); break;
+                default: throw std::runtime_error("данный тип полезной нагрузки опции не может использоваться в списке");
             }
             iter += element_size_in_bytes;
         }
 
     } else {
-
+        switch (description.payload_description.type){
+            case DhcpOptionPayloadType::VENDOR_SPECIFIC_FIELD: process_vendor_specific_field(payload_begin, payload_end); break;
+            case DhcpOptionPayloadType::BYTE_ARRAY: process_byte_array(payload_begin, payload_end); break;
+            case DhcpOptionPayloadType::STRING: process_string(payload_begin, payload_end); break;
+            case DhcpOptionPayloadType::UINT_ENUM: process_uint_enum(payload_begin); break;
+            default: throw std::runtime_error("не могу обработать данный тип полезной нагрузки опции");
+        }
     }
     throw std::runtime_error("Неизвестный тип поля DHCP свойства");
 }
