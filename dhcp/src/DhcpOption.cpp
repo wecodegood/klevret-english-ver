@@ -1,6 +1,6 @@
-#include "DhcpOption.h"
+#include "DhcpOption.hpp"
 #include <stdexcept>
-#include "endians.h"
+#include "endians.hpp"
 
 IntConstraint::IntConstraint(IntConstraintType type, int64_t min, int64_t max, std::vector<uint64_t> allowed_values)
     :   type(type), min(min), max(max), allowed_values(allowed_values)

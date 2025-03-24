@@ -1,4 +1,4 @@
-#include "DhcpMessage.h"
+#include "DhcpMessage.hpp"
 #include <stdexcept>
 
 DhcpMessage::DhcpMessage()

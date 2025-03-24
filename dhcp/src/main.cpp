@@ -1,5 +1,5 @@
 #include <iostream>
-#include "DhcpMessage.h"
+#include "DhcpMessage.hpp"
 
 // здесь можно производить отладку
 int main(){

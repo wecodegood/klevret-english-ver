@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include "IpAddress.h"
-#include "HardwareAddress.h"
+#include "IpAddress.hpp"
+#include "HardwareAddress.hpp"
 #include <string>
-#include "DhcpOption.h"
+#include "DhcpOption.hpp"
 #include <vector>
 
 // RFC 2131, page 10
