@@ -12,4 +12,9 @@ https://datatracker.ietf.org/doc/html/rfc2132
 cmake ../dhcp
 cmake --build .
 ```
+Если нужна отладочная информация в бинарнике, то так:
+```
+cmake -DCMAKE_BUILD_TYPE=Debug ../dhcp
+cmake --build .
+```
 После чего в этой же папке появится исполняемый файл dhcp-server, который можно запустить
