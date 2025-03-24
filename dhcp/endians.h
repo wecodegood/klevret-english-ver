@@ -25,11 +25,11 @@ T network_to_host_endian(
     T result = 0;
     if (std::endian::native == std::endian::big) {
         for (size_t i = 0; i < sizeof(T); i++) {
-            result = (result << 8) | static_cast<T>(begin[i]);
+            result = (result << 8) | static_cast<T>(begin[sizeof(T) - 1 - i]);
         }
     } else {
         for (size_t i = 0; i < sizeof(T); i++) {
-            result = (result << 8) | static_cast<T>(begin[sizeof(T) - 1 - i]);
+            result = (result << 8) | static_cast<T>(begin[i]);
         }
     }
 
