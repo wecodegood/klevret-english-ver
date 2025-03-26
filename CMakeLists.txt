@@ -20,6 +20,9 @@ endif()
 option(KLEVRET_BUILD_CORE "Сборка ядра" ON)
 option(KLEVRET_BUILD_DHCP "Сборка dhcp" ON)
 
+# Тесты
+option(KLEVRET_BUILD_TESTS "Сборка тестов" OFF)
+
 # ~~~ глобальные настройки ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 
 # Получение информации о типе генератора

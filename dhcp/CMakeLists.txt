@@ -12,23 +12,12 @@ file(GLOB KLEVRET_DHCP_SOURCE_FILES
     "${KLEVRET_DHCP_PATH}/src/*.hpp"
 )
 
-file(GLOB KLEVRET_DHCP_TESTS_SOURCE_FILES
-    ${KLEVRET_DHCP_SOURCE_FILES}
-    "${KLEVRET_DHCP_PATH}/tests/*.cpp"
-    "${KLEVRET_DHCP_PATH}/tests/*.hpp"
-
-)
-list(REMOVE_ITEM KLEVRET_DHCP_TESTS_SOURCE_FILES "${KLEVRET_DHCP_PATH}/src/main.cpp")
-
 # ~~~ dhcp-server target ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 
 # Переменная требуется для того, чтобы в случае изменения названия таргента,
 #   не пришлось вручную менять во всех местах упоминания.
 set(KLEVRET_DHCP_TARGET "dhcp-server")
 add_executable(${KLEVRET_DHCP_TARGET} ${KLEVRET_DHCP_SOURCE_FILES})
-
-set(KLEVRET_DHCP_TESTS_TARGET "dhcp-server-tests")
-add_executable(${KLEVRET_DHCP_TESTS_TARGET} ${KLEVRET_DHCP_TESTS_SOURCE_FILES})
 
 # Опционально. Указание что в src так же нужно искать заголовочные файлы.
 #   Используется в случаях с поддиректориями в файлах исходного кода, чтобы
@@ -37,19 +26,11 @@ target_include_directories(${KLEVRET_DHCP_TARGET}
     PRIVATE "${KLEVRET_DHCP_PATH}/src/"
 )
 
-target_include_directories(${KLEVRET_DHCP_TESTS_TARGET}
-    PRIVATE "${KLEVRET_DHCP_PATH}/src/"
-)
-
 # Указание стандарта
 target_compile_features(${KLEVRET_DHCP_TARGET} PRIVATE cxx_std_23)
-target_compile_features(${KLEVRET_DHCP_TESTS_TARGET} PRIVATE cxx_std_23)
 
 # Опции компиляции
 target_compile_options(${KLEVRET_DHCP_TARGET}
-    PRIVATE ${KLEVRET_COMMON_COMPILE_OPTIONS}
-)
-target_compile_options(${KLEVRET_DHCP_TESTS_TARGET}
     PRIVATE ${KLEVRET_COMMON_COMPILE_OPTIONS}
 )
 
@@ -58,16 +39,17 @@ set_target_properties(${KLEVRET_DHCP_TARGET} PROPERTIES
     CXX_EXTENSIONS OFF
     POSITION_INDEPENDENT_CODE ON
 )
-set_target_properties(${KLEVRET_DHCP_TESTS_TARGET} PROPERTIES
-    CXX_EXTENSIONS OFF
-    POSITION_INDEPENDENT_CODE ON
-)
 
 # ~~~ dhcp-server зависимости ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 
-target_link_libraries(${KLEVRET_DHCP_TESTS_TARGET}
-    PRIVATE gtest
-    PRIVATE gmock
-)
+# target_link_libraries(${KLEVRET_DHCP_TESTS_TARGET}
+#     PRIVATE 
+# )
+
+# ~~~ тесты ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
+
+if(KLEVRET_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
