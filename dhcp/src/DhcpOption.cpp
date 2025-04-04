@@ -257,24 +257,24 @@ void DhcpOption::process_string(std::vector<uint8_t>::iterator begin, std::vecto
 }
 
 void DhcpOption::process_ip_address(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    IpAddress value(begin, end);
+    IPv4Address value = IPv4Address::from_big_endian_bytes(begin, end);
     real_values.push_back(value);
 }
 
 void DhcpOption::process_subnet_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    subnet_mask_t subnet_mask = network_to_host_endian<subnet_mask_t>(begin, end);
+    IPv4SubnetMask subnet_mask = IPv4SubnetMask::from_big_endian_bytes(begin, end);
     real_values.push_back(subnet_mask);
 }
 
 void DhcpOption::process_ip_address_with_mask(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    IpAddress ip_address{begin, begin + 4};
-    subnet_mask_t subnet_mask = network_to_host_endian<subnet_mask_t>(begin + 4, end);
+    IPv4Address ip_address = IPv4Address::from_big_endian_bytes(begin, begin + 4);
+    IPv4SubnetMask subnet_mask = IPv4SubnetMask::from_big_endian_bytes(begin + 4, end);
     real_values.push_back(std::pair{ip_address, subnet_mask});
 }
 
 void DhcpOption::process_two_ip_addresses(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
-    IpAddress ip1(begin, begin + 4);
-    IpAddress ip2(begin + 4, end);
+    IPv4Address ip1 = IPv4Address::from_big_endian_bytes(begin, begin + 4);
+    IPv4Address ip2 = IPv4Address::from_big_endian_bytes(begin + 4, end);
     real_values.push_back(std::pair(ip1, ip2));
 }
 

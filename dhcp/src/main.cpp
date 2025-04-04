@@ -1,8 +1,17 @@
 #include <iostream>
 #include "DhcpMessage.hpp"
+#include "NetworkInterface.hpp"
 
 // здесь можно производить отладку
 int main(){
+    auto ifaces = get_all_interfaces();
+    for (auto &iface : ifaces){
+        if (iface.type == L3AddressType::IPv4){
+            std::cout << iface.name << ": " << std::get<IPv4Address>(iface.network_address).to_string()
+                << "/" << std::get<IPv4SubnetMask>(iface.subnet_mask).to_prefix()
+                << "  " << iface.mac_address.to_string() <<"\n";
+        }
+    }
     std::vector<uint8_t> dhcp_message_data = {
         0x02, 0x01, 0x06, 0x00, // op, htype, hlen, hops
         0x07, 0xd0, 0xd9, 0x0d, // xid

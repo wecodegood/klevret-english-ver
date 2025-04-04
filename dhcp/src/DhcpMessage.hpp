@@ -6,6 +6,7 @@
 #include <string>
 #include "DhcpOption.hpp"
 #include <vector>
+#include <memory>
 
 // RFC 2131, page 10
 enum class DhcpMessageType : uint8_t{
@@ -28,11 +29,11 @@ struct DhcpMessage{
     uint32_t xid;
     uint16_t secs;
     uint16_t flags;
-    IpAddress ciaddr;
-    IpAddress yiaddr;
-    IpAddress siaddr;
-    IpAddress giaddr;
-    HardwareAddress* chaddr;
+    IPv4Address ciaddr;
+    IPv4Address yiaddr;
+    IPv4Address siaddr;
+    IPv4Address giaddr;
+    std::unique_ptr<HardwareAddress> chaddr;
     std::basic_string<uint8_t> sname;
     std::basic_string<uint8_t> file;
     std::vector<DhcpOption> options;

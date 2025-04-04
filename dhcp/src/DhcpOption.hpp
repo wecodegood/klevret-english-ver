@@ -48,9 +48,10 @@ using dhcp_option_field_real_value_t = std::variant<
     uint8_t,
     std::vector<uint8_t>,
     std::basic_string<uint8_t>,
-    IpAddress,
-    std::pair<IpAddress, subnet_mask_t>,
-    std::pair<IpAddress, IpAddress>,
+    IPv4Address,
+    IPv4SubnetMask,
+    std::pair<IPv4Address, IPv4SubnetMask>,
+    std::pair<IPv4Address, IPv4Address>,
     bool
 >;
 

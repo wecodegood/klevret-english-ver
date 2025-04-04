@@ -40,18 +40,18 @@ DhcpMessage::DhcpMessage(std::vector<uint8_t> data)
         | (static_cast<uint16_t>(data.at(11)));
     auto iter = data.begin();
     iter += 11 + 1;
-    ciaddr = IpAddress(iter, iter + IP_ADDRESS_LENGTH);
-    iter += IP_ADDRESS_LENGTH;
-    yiaddr = IpAddress(iter, iter + IP_ADDRESS_LENGTH);
-    iter += IP_ADDRESS_LENGTH;
-    siaddr = IpAddress(iter, iter + IP_ADDRESS_LENGTH);
-    iter += IP_ADDRESS_LENGTH;
-    giaddr = IpAddress(iter, iter + IP_ADDRESS_LENGTH);
-    iter += IP_ADDRESS_LENGTH;
+    ciaddr = IPv4Address::from_big_endian_bytes(iter, iter + IP_V4_ADDRESS_LENGTH);
+    iter += IP_V4_ADDRESS_LENGTH;
+    yiaddr = IPv4Address::from_big_endian_bytes(iter, iter + IP_V4_ADDRESS_LENGTH);
+    iter += IP_V4_ADDRESS_LENGTH;
+    siaddr = IPv4Address::from_big_endian_bytes(iter, iter + IP_V4_ADDRESS_LENGTH);
+    iter += IP_V4_ADDRESS_LENGTH;
+    giaddr = IPv4Address::from_big_endian_bytes(iter, iter + IP_V4_ADDRESS_LENGTH);
+    iter += IP_V4_ADDRESS_LENGTH;
     if (htype != HardwareAddressType::Ethernet_10Mb){
         throw std::runtime_error("Неподдерживаемый тип адреса");
     }
-    chaddr = new MacAddress(iter, iter + MacAddress::address_length);
+    chaddr = std::unique_ptr<HardwareAddress>(MacAddress::make_ptr_from_big_endian_bytes(iter, iter + MacAddress::address_length));
     iter += DHCP_HARDWARE_ADDRESS_MAX_LENGTH;
     sname = std::basic_string<uint8_t>(iter, iter + 64);
     iter += 64;

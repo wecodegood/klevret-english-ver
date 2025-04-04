@@ -29,3 +29,11 @@ T network_to_host_endian(
 
     return result;
 }
+
+template<std::integral T>
+T network_to_host_endian(T value) {
+    if (std::endian::native == std::endian::little) {
+        return std::byteswap(value);
+    }
+    return value;
+}
