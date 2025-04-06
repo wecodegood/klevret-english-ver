@@ -42,9 +42,12 @@ set_target_properties(${KLEVRET_DHCP_TARGET} PROPERTIES
 
 # ~~~ dhcp-server зависимости ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 
-# target_link_libraries(${KLEVRET_DHCP_TESTS_TARGET}
-#     PRIVATE 
-# )
+target_link_libraries(${KLEVRET_DHCP_TARGET}
+    PRIVATE
+        Boost::asio
+        Boost::algorithm
+        Boost::property_tree
+)
 
 # ~~~ тесты ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 
