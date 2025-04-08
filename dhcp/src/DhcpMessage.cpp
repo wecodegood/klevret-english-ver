@@ -83,6 +83,7 @@ DhcpMessage::DhcpMessage(std::vector<uint8_t> data)
     }
 }
 
-std::vector<uint8_t> DhcpMessage::to_network_data(){
+std::vector<uint8_t> DhcpMessage::to_network_data() {
 
+    return {};
 }
