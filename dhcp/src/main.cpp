@@ -2,6 +2,10 @@
 #include "DhcpMessage.hpp"
 #include "NetworkInterface.hpp"
 
+#include <boost/asio.hpp>
+#include <boost/algorithm/algorithm.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 // здесь можно производить отладку
 int main(){
     auto ifaces = get_all_interfaces();

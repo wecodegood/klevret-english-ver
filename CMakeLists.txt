@@ -50,7 +50,7 @@ list(APPEND KLEVRET_COMMON_COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
 include(FetchContent)
 
 # googletest
-message(STATUS "Подготовка 'google/googletest.git'")
+message(STATUS "Загрузка 'google/googletest.git'")
 FetchContent_Declare("googletest"
     GIT_REPOSITORY "https://github.com/google/googletest.git"
     GIT_TAG "v1.16.0"
@@ -61,7 +61,13 @@ FetchContent_Declare("googletest"
 set(INSTALL_GTEST FALSE CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable("googletest")
 
-# ~~~ доавление компонентов ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrepareBoostModule.cmake")
+
+PrepareBoostModule("asio" "1.87.0")
+PrepareBoostModule("algorithm" "1.87.0")
+PrepareBoostModule("property_tree" "1.87.0")
+
+# ~~~ добавление компонентов ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 
 # Указание путей до корня компонентов (будет использовано в локальных конфигах)
 set(KLEVRET_CORE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/core")

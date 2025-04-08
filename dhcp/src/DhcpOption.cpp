@@ -40,7 +40,7 @@ int64_t DhcpOptionPayloadDescription::get_one_element_payload_length_in_bytes() 
     case DhcpOptionPayloadType::UINT_32: return 4;
     case DhcpOptionPayloadType::UINT_8: return 1;
     case DhcpOptionPayloadType::UINT_ENUM: return 1;
-    case DhcpOptionPayloadType::VENDOR_SPECIFIC_FIELD: VARIABLE_DHCP_OPTION_LENGTH;
+    case DhcpOptionPayloadType::VENDOR_SPECIFIC_FIELD: return VARIABLE_DHCP_OPTION_LENGTH;
     }
     throw std::runtime_error("Неизвестный тип поля DHCP свойства");
 }
@@ -84,16 +84,13 @@ bool DhcpOptionPayloadDescription::is_correct_int(int32_t value){
         case IntConstraintType::NONE: return true;
         case IntConstraintType::FROM_MIN: return value >= int_constraint.min;
         case IntConstraintType::RANGE: return value >= int_constraint.min && value <= int_constraint.max;
-        case IntConstraintType::UINT_ENUM:{
-            bool match = false;
+        case IntConstraintType::UINT_ENUM:
             for (auto allowed_value : int_constraint.allowed_values){
-                if (allowed_value == value){
-                    match = true;
-                    break;
+                if (allowed_value == (unsigned int)value) {
+                    return true;
                 }
             }
-            return match;
-        }
+            return false;
     }
     return false;
 }
@@ -241,11 +238,11 @@ void DhcpOption::process_vendor_specific_field(std::vector<uint8_t>::iterator be
 void DhcpOption::process_byte_array(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
     std::vector<uint8_t> byte_array{begin, end};
     if (description.payload_length == VARIABLE_DHCP_OPTION_LENGTH
-        && byte_array.size() < description.payload_description.min_len_in_elements)
+        && byte_array.size() < (unsigned int)description.payload_description.min_len_in_elements)
     {
         throw std::runtime_error("длина опции меньше чем минимальная");
     }
-    if (description.payload_length != byte_array.size()){
+    if (description.payload_length != (int64_t)byte_array.size()){
         throw std::runtime_error{"несовпадение длины"};
     }
     real_values.push_back(byte_array);

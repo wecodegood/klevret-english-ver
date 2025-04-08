@@ -43,7 +43,10 @@ set_target_properties(${KLEVRET_CORE_TARGET} PROPERTIES
 # ~~~ core-server зависимости ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 
 target_link_libraries(${KLEVRET_CORE_TARGET}
-    PRIVATE gtest
+    PRIVATE
+        Boost::asio
+        Boost::algorithm
+        Boost::property_tree
 )
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
