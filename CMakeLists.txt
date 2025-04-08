@@ -19,6 +19,7 @@ endif()
 # Компоненты
 option(KLEVRET_BUILD_CORE "Сборка ядра" ON)
 option(KLEVRET_BUILD_DHCP "Сборка dhcp" ON)
+option(KLEVRET_BUILD_CLI "Сборка консоли" ON)
 
 # Тесты
 option(KLEVRET_BUILD_TESTS "Сборка тестов" OFF)
@@ -65,6 +66,7 @@ FetchContent_MakeAvailable("googletest")
 # Указание путей до корня компонентов (будет использовано в локальных конфигах)
 set(KLEVRET_CORE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/core")
 set(KLEVRET_DHCP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dhcp")
+set(KLEVRET_CLI_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cli")
 
 # core
 if(${KLEVRET_BUILD_CORE})
@@ -74,6 +76,11 @@ endif()
 # dhcp
 if(${KLEVRET_BUILD_DHCP})
     add_subdirectory(${KLEVRET_DHCP_PATH})
+endif()
+
+# cli
+if(${KLEVRET_BUILD_CLI})
+    add_subdirectory(${KLEVRET_CLI_PATH})
 endif()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
