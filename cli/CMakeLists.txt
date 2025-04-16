@@ -40,6 +40,12 @@ set_target_properties(${KLEVRET_CLI_TARGET} PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+target_link_libraries(${KLEVRET_CLI_TARGET}
+    PRIVATE
+        Boost::asio
+        Boost::algorithm
+        Boost::property_tree
+)
 
 # ~~~ тесты ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 

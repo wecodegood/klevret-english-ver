@@ -6,13 +6,13 @@
 #include <unistd.h>
 #include <iostream>
 
-ConsoleController::ConsoleController(int in_descriptor, int out_descriptor)
+Console::Console(int in_descriptor, int out_descriptor)
     : _in_descriptor(in_descriptor), _out_descriptor(out_descriptor)
 {
 
 }
 
-int ConsoleController::getkey(){
+int Console::getkey(){
     // https://programmersought.com/article/50833994785/
     // https://stackoverflow.com/a/14323342
     char ch;
@@ -50,21 +50,35 @@ int ConsoleController::getkey(){
 }
 
 
-void ConsoleController::move_cursor_to_left(int number){
-    std::string control_sequence = "\033[" + std::to_string(number) + 'D';
-    write(_out_descriptor, control_sequence.c_str(), control_sequence.length());
+void Console::move_cursor_to_left(int number){
+    std::string control_sequence = "\033[" + std::to_string(number) + "D";
+    write_str(control_sequence);
 }
 
-void ConsoleController::clear_line_from_cursor_position(){
+
+void Console::move_cursor_to_right(int number){
+    std::string control_sequence = "\033[" + std::to_string(number) + 'C';
+    write_str(control_sequence);
+}
+
+void Console::clear_line_from_cursor_position(){
     std::string control_sequence = "\033[K";
     write(_out_descriptor, control_sequence.c_str(), control_sequence.length());
 }
 
-void ConsoleController::write_str(const std::string& str){
+void Console::write_str(const std::string& str){
+    if (str.size() == 0){
+        return;
+    }
     write(_out_descriptor, str.c_str(), str.length());
 }
 
-void ConsoleController::change_color(Color color){
+void Console::change_text_color(Color color){
+    current_text_color = color;
     std::string control_sequence = "\033[3" + std::to_string(static_cast<int>(color)) + "m";
-    write(_out_descriptor, control_sequence.c_str(), control_sequence.length());
+    write_str(control_sequence);
+}
+
+void print_hints(const std::vector<std::string>& hints){
+
 }

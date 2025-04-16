@@ -3,11 +3,25 @@
 #include "WrapperForParsing.hpp"
 #include <stdexcept>
 #include <map>
+#include <boost/property_tree/ptree.hpp>
 
 
+std::string to_string(const CommandElement& command_element){
+    switch (command_element.type)
+    {
+        case CommandElementType::FIXED_WORD: return command_element.fixed_value;
+        case CommandElementType::IP_V4_ADDRESS: return "<IPv4 address>";
+        case CommandElementType::IP_V4_SUBNET_MASK: return "<subnet mask (IPv4)>";
+        case CommandElementType::IP_V6_ADDRESS: return "<IPv6 address>";
+        case CommandElementType::IP_V6_SUBNET_MASK: return "<subnet mask (IPv6)>";
+        case CommandElementType::NAME: return "<name>";
+        case CommandElementType::STRING: return "<string>";
+        default: return "<UNKNOWN>";
+    }
+}
 
-CommandElement::CommandElement(CommandElementType type, const std::string& name_value)
-    : type(type), name_value(name_value)
+CommandElement::CommandElement(CommandElementType type, const std::string& fixed_value)
+    : type(type), fixed_value(fixed_value)
 {
 
 }
@@ -47,7 +61,7 @@ void Command::parse_variable_element(WrapperForParsing& wrap){
     }
     wrap.get_next();
     std::string variable_element = "";
-    while(std::isalpha(wrap.ch)){
+    while(std::isalnum(wrap.ch)){
         variable_element += wrap.ch;
         wrap.get_next();
     }
@@ -104,9 +118,56 @@ std::vector<Command> all_commands = {
             {Language::English, "version", "show Klevret software version"}
         }
     },
+    {
+        "ip show",
+        {
+
+        }
+    },
+    {
+        "ip address show",
+        {
+
+        }
+    },
+    {
+        "ip address <IPv4Address>",
+        {
+
+        }
+    }
 
 };
 
 std::vector<Command> get_all_commands(){
     return all_commands;
+}
+
+void add_command_to_tree(CommandTree& tree_root, const Command& command){
+    CommandTree *current_node = &tree_root;
+    for (const auto& command_element : command._elements){
+        bool found = false;
+        for (auto& node : current_node->childs){
+            if (node.command_element == command_element){
+                found = true;
+                current_node = &node;
+                break;
+            }
+        }
+        if (!found){
+            CommandTree new_node;
+            new_node.command_element = command_element;
+            current_node->childs.push_back(new_node);
+            current_node = &(current_node->childs.at(current_node->childs.size() - 1));
+        }
+    }
+}
+
+CommandTree create_command_tree(){
+    CommandTree tree;
+    auto all_commands = get_all_commands();
+    for (auto& command : all_commands){
+        add_command_to_tree(tree, command);
+    }
+    return tree;
 }

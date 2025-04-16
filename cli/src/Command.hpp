@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 #include "WrapperForParsing.hpp"
+#include <boost/property_tree/ptree.hpp>
 
 enum class CommandElementType{
+    NONE,
     FIXED_WORD,
     STRING,
     NAME,
@@ -17,10 +19,15 @@ enum class CommandElementType{
 
 
 struct CommandElement{
-    CommandElement(CommandElementType type, const std::string& name_value);
+    CommandElement():type(CommandElementType::NONE), fixed_value(""){}
+    CommandElement(CommandElementType type, const std::string& fixed_value);
+    bool operator==(const CommandElement& another)const=default;
+
     CommandElementType type;
-    std::string name_value;
+    std::string fixed_value;
 };
+
+std::string to_string(const CommandElement& command_element);
 
 enum class Language{
     Russian,
@@ -46,4 +53,11 @@ private:
     void parse_variable_element(WrapperForParsing& wrap);
 };
 
+struct CommandTree{
+    CommandTree()=default;
+    CommandElement command_element;
+    std::vector<CommandTree> childs;
+};
+
 std::vector<Command> get_all_commands();
+CommandTree create_command_tree();
