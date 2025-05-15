@@ -1,4 +1,4 @@
-#include "ConsoleController.hpp"
+#include "Console.hpp"
 
 #include <cstdio>
 #include <termios.h>
@@ -6,10 +6,21 @@
 #include <unistd.h>
 #include <iostream>
 
-Console::Console(int in_descriptor, int out_descriptor)
-    : _in_descriptor(in_descriptor), _out_descriptor(out_descriptor)
-{
+Console::Console(){
+    _in_descriptor = fileno(stdin);
+    _out_descriptor = fileno(stdout);
+}
 
+Console& Console::Instance(){
+    static Console *singleton = nullptr;
+    static std::mutex mutex;
+    if (!singleton){
+        std::lock_guard<std::mutex> guard(mutex);
+        if (!singleton){
+            singleton = new Console();
+        }
+    }
+    return *singleton;
 }
 
 int Console::getkey(){

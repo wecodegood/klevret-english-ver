@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Command.hpp"
-#include "ConsoleController.hpp"
+#include "Console.hpp"
+
 
 void print_tree(const CommandTree& root, int tab=0){
     for (const auto& node : root.childs){
@@ -12,42 +13,42 @@ void print_tree(const CommandTree& root, int tab=0){
     }
 }
 
-void print_title(Console &console){
-    Color old_color = console.current_text_color;
-    console.change_text_color(Color::GREEN);
-    console.write_str("klevret> ");
-    console.change_text_color(old_color);
+void print_title(){
+    Color old_color = Console::Instance().current_text_color;
+    Console::Instance().change_text_color(Color::GREEN);
+    Console::Instance().write_str("klevret> ");
+    Console::Instance().change_text_color(old_color);
 }
 
 int main(){
-    CommandTree root = create_command_tree();
-    CommandTree *current_node = &root;
-    print_tree(root);
-    Console console(fileno(stdin), fileno(stdout));
     auto commands = get_all_commands();
+    CommandTree command_tree_root;
+    CommandTree *current_command_tree_node;
     char prev = 0;
-    print_title(console);
-    while (true){
-        char c;
-        c = console.getkey();
-        if (c != -1){
-            //console.write_str("<" + std::to_string((int)c) + ">");
+    Console& console = Console::Instance();
 
-            switch (c)
-            {
+    print_tree(command_tree_root);
+    print_title();
+
+    while (true){
+        char c = -1;
+        c = Console::Instance().getkey();
+        if (c != -1){
+            switch (c){
                 case Console::TAB:
                     console.move_cursor_to_left(1);
                     console.clear_line_from_cursor_position();
                     console.write_str("\n");
-                    for (auto& node : current_node->childs){
+                    for (auto& node : current_command_tree_node->childs){
                         console.write_str(to_string(node.command_element) +"\n");
                     }
                     console.write_str("\r");
-                    print_title(console);
-                    if (prev == Console::ENTER)
+                    print_title();
+                    if (prev == Console::ENTER){
                         for (int k = 0; k < 9; ++k){
                             console.current_command_input += (std::string("") + (char)27 + (char)91 + (char)67);
                         }
+                    }
                     console.write_str(console.current_command_input);
                     break;
                 case Console::ENTER:
@@ -57,13 +58,12 @@ int main(){
                     //ToDo handle input
                     console.current_command_input = "";
                     console.current_command_input_cursor_pos = 0;
-                    print_title(console);
+                    print_title();
+                    break;
                 default:
                     console.current_command_input += c;
                     break;
             }
-            prev = c;
         }
     }
-    std::cout << "it is CLI!\n";
 }
