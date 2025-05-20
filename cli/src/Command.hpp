@@ -17,7 +17,6 @@ enum class CommandElementType{
     IP_V6_SUBNET_MASK
 };
 
-
 struct CommandElement{
     CommandElement():type(CommandElementType::NONE), fixed_value(""){}
     CommandElement(CommandElementType type, const std::string& fixed_value);
@@ -26,6 +25,8 @@ struct CommandElement{
     CommandElementType type;
     std::string fixed_value;
 };
+
+bool check_command_element(const std::string& str, CommandElement element);
 
 std::string to_string(const CommandElement& command_element);
 

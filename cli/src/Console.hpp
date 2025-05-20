@@ -27,6 +27,7 @@ public:
     //static constexpr int ARROW_RIGHT = 27 91 67;
     //static constexpr int ARROW_UP = 27 91 65;
     //static constexpr int ARROW_DOWN = 27 91 66;
+    static constexpr int SPACE = 0x20;
     static constexpr std::string CSI = "\e[";
 
     int getkey();

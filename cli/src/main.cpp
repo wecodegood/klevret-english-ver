@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Command.hpp"
 #include "Console.hpp"
+#include <boost/algorithm/string.hpp>
 
 
 void print_tree(const CommandTree& root, int tab=0){
@@ -20,10 +21,39 @@ void print_title(){
     Console::Instance().change_text_color(old_color);
 }
 
+enum class ESC_sequense{
+    ARROW_LEFT,
+    ARROW_RIGHT,
+    ARROW_UP,
+    ARROW_DOWN,
+    UNKNOWN
+};
+
+ESC_sequense to_esq_sequence(char ch_1, char ch_2){
+    if (ch_1 == 91 && ch_2 == 68) return ESC_sequense::ARROW_LEFT;
+    if (ch_1 == 91 && ch_2 == 67) return ESC_sequense::ARROW_RIGHT;
+    return ESC_sequense::UNKNOWN;
+}
+
+CommandTree* analyze_command(const std::string& command, CommandTree& root){
+    std::vector<std::string> parts;
+    boost::algorithm::split(parts, command, boost::is_any_of(" "), boost::algorithm::token_compress_on);
+    CommandTree* current = &root;
+    for (const auto& part : parts){
+        for (auto& child : current->childs){
+            if (check_command_element(part, child.command_element)){
+                current = &child;
+                break;
+            }
+        }
+    }
+    return current;
+}
+
 int main(){
     auto commands = get_all_commands();
-    CommandTree command_tree_root;
-    CommandTree *current_command_tree_node;
+    CommandTree command_tree_root = create_command_tree();
+    CommandTree *current_command_tree_node = &command_tree_root;
     char prev = 0;
     Console& console = Console::Instance();
 
@@ -39,8 +69,11 @@ int main(){
                     console.move_cursor_to_left(1);
                     console.clear_line_from_cursor_position();
                     console.write_str("\n");
-                    for (auto& node : current_command_tree_node->childs){
-                        console.write_str(to_string(node.command_element) +"\n");
+                    current_command_tree_node = analyze_command(console.current_command_input, command_tree_root);
+                    if (current_command_tree_node){
+                        for (auto& node : current_command_tree_node->childs){
+                            console.write_str(to_string(node.command_element) +"\n");
+                        }
                     }
                     console.write_str("\r");
                     print_title();
@@ -60,8 +93,52 @@ int main(){
                     console.current_command_input_cursor_pos = 0;
                     print_title();
                     break;
+                case Console::BACKSPACE:
+                    ///
+                    console.move_cursor_to_left(console.current_command_input_cursor_pos + 2);
+                    console.clear_line_from_cursor_position();
+                    if (console.current_command_input_cursor_pos != 0){
+                        console.current_command_input = console.current_command_input.erase(console.current_command_input_cursor_pos - 1, 1);
+                        console.write_str(console.current_command_input);
+                        console.current_command_input_cursor_pos--;
+                    }
+                    console.move_cursor_to_left(console.current_command_input.length() - console.current_command_input_cursor_pos);
+                    ///
+                    break;
+                case Console::SPACE:
+                    console.current_command_input += c;
+                    console.current_command_input_cursor_pos++;
+                    break;
+                case 27:{
+                    //ESC
+                    char ch_1 = Console::Instance().getkey();
+                    char ch_2 = Console::Instance().getkey();
+                    auto esc_sequence = to_esq_sequence(ch_1, ch_2);
+                    switch (esc_sequence){
+                        case ESC_sequense::ARROW_LEFT:
+                            console.move_cursor_to_left(console.current_command_input_cursor_pos + 4);
+                            console.clear_line_from_cursor_position();
+                            console.write_str(console.current_command_input);
+                            if (console.current_command_input_cursor_pos != 0){
+                                console.current_command_input_cursor_pos--;
+                            }
+                            console.move_cursor_to_left(console.current_command_input.length() - console.current_command_input_cursor_pos);
+                            break;
+                        case ESC_sequense::ARROW_RIGHT:
+                            console.move_cursor_to_left(console.current_command_input_cursor_pos + 4);
+                            console.clear_line_from_cursor_position();
+                            console.write_str(console.current_command_input);
+                            if (console.current_command_input_cursor_pos < console.current_command_input.length()){
+                                console.current_command_input_cursor_pos++;
+                            }
+                            console.move_cursor_to_left(console.current_command_input.length() - console.current_command_input_cursor_pos);
+                            break;
+                    }
+                    break;
+                }
                 default:
                     console.current_command_input += c;
+                    console.current_command_input_cursor_pos++;
                     break;
             }
         }

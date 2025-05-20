@@ -62,12 +62,18 @@ int Console::getkey(){
 
 
 void Console::move_cursor_to_left(int number){
+    if (number == 0){
+        return;
+    }
     std::string control_sequence = "\033[" + std::to_string(number) + "D";
     write_str(control_sequence);
 }
 
 
 void Console::move_cursor_to_right(int number){
+    if (number == 0){
+        return;
+    }
     std::string control_sequence = "\033[" + std::to_string(number) + 'C';
     write_str(control_sequence);
 }

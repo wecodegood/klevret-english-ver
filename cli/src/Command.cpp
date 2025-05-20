@@ -6,6 +6,101 @@
 #include <boost/property_tree/ptree.hpp>
 
 
+bool parse_string(const std::string& str){
+    WrapperForParsing wrap(str);
+    if (wrap.ch != '"'){
+        return false;
+    }
+    wrap.get_next();
+    while (std::isalpha(wrap.ch)){
+        wrap.get_next();
+    }
+    if (wrap.ch != '"'){
+        return false;
+    }
+    return true;
+}
+
+bool parse_name(const std::string& str){
+    //ToDo
+    return true;
+}
+
+int parse_number(WrapperForParsing& wrap){
+    if (!std::isdigit(wrap.ch)){
+        throw std::runtime_error("Ошибка парсинга числа: ожидалась цифра");
+    }
+    int result = 0;
+    while (std::isdigit(wrap.ch)){
+        result = result * 10 + (wrap.ch - '0');
+    }
+    return result;
+}
+
+bool parse_ipv4_address(const std::string& str){
+    WrapperForParsing wrap(str);
+    for (int i = 0; i < 4; ++i){
+        int octet = 0;
+        try{
+            octet = parse_number(wrap);
+            if (octet < 0 || octet > 255){
+                return false;
+            }
+            if (i < 3){
+                if (wrap.ch != ','){
+                    return false;
+                }
+                wrap.get_next();
+            }
+        } catch(...){
+            return false;
+        }
+    }
+    if (wrap.ch != WrapperForParsing::EOT){
+        return false;
+    }
+    return true;
+}
+
+bool parse_ipv4_subnet_mask(const std::string& str){
+    //ToDo
+    return true;
+}
+
+bool parse_ipv6_address(const std::string& str){
+    //ToDo
+    return true;
+}
+
+bool parse_ipv6_subnet_mask(const std::string& str){
+    //ToDo
+    return true;
+}
+
+
+bool check_command_element(const std::string& str, CommandElement element){
+    switch (element.type)
+    {
+        case CommandElementType::NONE:
+            return false;
+        case CommandElementType::FIXED_WORD:
+            return element.fixed_value == str;
+        case CommandElementType::STRING:
+            return parse_string(str);
+        case CommandElementType::NAME:
+            return parse_name(str);
+        case CommandElementType::IP_V4_ADDRESS:
+            return parse_ipv4_address(str);
+        case CommandElementType::IP_V4_SUBNET_MASK:
+            return parse_ipv4_subnet_mask(str);
+        case CommandElementType::IP_V6_ADDRESS:
+            return parse_ipv6_address(str);
+        case CommandElementType::IP_V6_SUBNET_MASK:
+            return parse_ipv6_subnet_mask(str);
+
+    }
+}
+
 std::string to_string(const CommandElement& command_element){
     switch (command_element.type)
     {
@@ -18,6 +113,7 @@ std::string to_string(const CommandElement& command_element){
         case CommandElementType::STRING: return "<string>";
         default: return "<UNKNOWN>";
     }
+    return "<UNKNOWN>";
 }
 
 CommandElement::CommandElement(CommandElementType type, const std::string& fixed_value)
