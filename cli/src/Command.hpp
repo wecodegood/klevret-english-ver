@@ -5,6 +5,8 @@
 #include <vector>
 #include "WrapperForParsing.hpp"
 #include <boost/property_tree/ptree.hpp>
+#include "ip_addresses.hpp"
+#include <stack>
 
 enum class CommandElementType{
     NONE,
@@ -17,13 +19,27 @@ enum class CommandElementType{
     IP_V6_SUBNET_MASK
 };
 
+using CommandElementRealValue = std::variant<
+    std::string,
+    IPv4Address,
+    IPv6Address,
+    IPv4SubnetMask,
+    IPv6SubnetMask
+>;
+
+class Command;
+using command_handler = std::function<void(std::stack<CommandElementRealValue>&)>;
+
 struct CommandElement{
     CommandElement():type(CommandElementType::NONE), fixed_value(""){}
     CommandElement(CommandElementType type, const std::string& fixed_value);
-    bool operator==(const CommandElement& another)const=default;
+    bool operator==(const CommandElement& another)const{
+        return type == another.type && fixed_value == another.fixed_value;
+    }
 
     CommandElementType type;
     std::string fixed_value;
+    command_handler handler = nullptr;
 };
 
 bool check_command_element(const std::string& str, CommandElement element);
@@ -42,11 +58,13 @@ struct CommandDescription{
     std::string description;
 };
 
+
 class Command{
 public:
-    Command(const std::string& pattern, const std::vector<CommandDescription>& descriptions);
-    std::vector<CommandElement> _elements;
-    std::vector<CommandDescription> _descriptions;
+    Command(const std::string& pattern, const std::vector<CommandDescription>& descriptions, command_handler handler);
+    std::vector<CommandElement> elements;
+    std::vector<CommandDescription> descriptions;
+    const command_handler handler;
 private:
     void parse_pattern(WrapperForParsing& wrap);
     void parse_pattern_element(WrapperForParsing& wrap);

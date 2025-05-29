@@ -2,14 +2,18 @@
 #include "Command.hpp"
 #include "Console.hpp"
 #include <boost/algorithm/string.hpp>
+#include <stack>
+#include <tuple>
 
 
 void print_tree(const CommandTree& root, int tab=0){
     for (const auto& node : root.childs){
-        for (int i = 0; i < tab; ++i){
-            std::cout << "--";
+        if (node.command_element.handler == nullptr){
+            for (int i = 0; i < tab; ++i){
+                std::cout << "--";
+            }
+            std::cout << to_string(node.command_element)  << "\n";
         }
-        std::cout << to_string(node.command_element)  << "\n";
         print_tree(node, tab + 1);
     }
 }
@@ -35,7 +39,8 @@ ESC_sequense to_esq_sequence(char ch_1, char ch_2){
     return ESC_sequense::UNKNOWN;
 }
 
-CommandTree* analyze_command(const std::string& command, CommandTree& root){
+std::tuple<CommandTree*, std::stack<CommandElementRealValue>> analyze_command(const std::string& command, CommandTree& root){
+    std::stack<CommandElementRealValue> stack;
     std::vector<std::string> parts;
     boost::algorithm::split(parts, command, boost::is_any_of(" "), boost::algorithm::token_compress_on);
     CommandTree* current = &root;
@@ -43,17 +48,35 @@ CommandTree* analyze_command(const std::string& command, CommandTree& root){
         for (auto& child : current->childs){
             if (check_command_element(part, child.command_element)){
                 current = &child;
+                switch (child.command_element.type){
+                    case CommandElementType::IP_V4_ADDRESS:
+                        stack.push(IPv4Address(part));
+                        break;
+                    case CommandElementType::IP_V6_ADDRESS:
+                        stack.push(IPv6Address(part));
+                        break;
+                    case CommandElementType::IP_V4_SUBNET_MASK:
+                        stack.push(IPv4SubnetMask(part));
+                        break;
+                    case CommandElementType::IP_V6_SUBNET_MASK:
+                        stack.push(IPv6SubnetMask(part));
+                        break;
+                    default:
+                        stack.push(part);
+                        break;
+                }
                 break;
             }
         }
     }
-    return current;
+    return std::tuple(current, stack);
 }
 
 int main(){
     auto commands = get_all_commands();
     CommandTree command_tree_root = create_command_tree();
     CommandTree *current_command_tree_node = &command_tree_root;
+    std::stack<CommandElementRealValue> current_command_elements_stack;
     char prev = 0;
     Console& console = Console::Instance();
 
@@ -69,7 +92,7 @@ int main(){
                     console.move_cursor_to_left(1);
                     console.clear_line_from_cursor_position();
                     console.write_str("\n");
-                    current_command_tree_node = analyze_command(console.current_command_input, command_tree_root);
+                    std::tie(current_command_tree_node, current_command_elements_stack) = analyze_command(console.current_command_input, command_tree_root);
                     if (current_command_tree_node){
                         for (auto& node : current_command_tree_node->childs){
                             console.write_str(to_string(node.command_element) +"\n");
@@ -89,6 +112,11 @@ int main(){
                     console.clear_line_from_cursor_position();
                     console.write_str("\n");
                     //ToDo handle input
+                    std::tie(current_command_tree_node, current_command_elements_stack) = analyze_command(console.current_command_input, command_tree_root);
+                    if (current_command_tree_node->childs.size() == 1 && current_command_tree_node->childs.at(0).command_element.handler != nullptr){
+                        current_command_tree_node->childs.at(0).command_element.handler(current_command_elements_stack);
+                    }
+                    //
                     console.current_command_input = "";
                     console.current_command_input_cursor_pos = 0;
                     print_title();

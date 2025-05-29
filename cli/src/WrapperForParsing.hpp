@@ -10,6 +10,7 @@ public:
     void get_next();
     void skip_whitespaces();
     bool is_end() const;
+    void check(char c);
     char ch;
 private:
     std::string _data;

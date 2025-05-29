@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <map>
 #include <boost/property_tree/ptree.hpp>
-
+#include "command_handlers.hpp"
 
 bool parse_string(const std::string& str){
     WrapperForParsing wrap(str);
@@ -33,6 +33,7 @@ int parse_number(WrapperForParsing& wrap){
     int result = 0;
     while (std::isdigit(wrap.ch)){
         result = result * 10 + (wrap.ch - '0');
+        wrap.get_next();
     }
     return result;
 }
@@ -40,14 +41,13 @@ int parse_number(WrapperForParsing& wrap){
 bool parse_ipv4_address(const std::string& str){
     WrapperForParsing wrap(str);
     for (int i = 0; i < 4; ++i){
-        int octet = 0;
         try{
-            octet = parse_number(wrap);
+            int octet = parse_number(wrap);
             if (octet < 0 || octet > 255){
                 return false;
             }
             if (i < 3){
-                if (wrap.ch != ','){
+                if (wrap.ch != '.'){
                     return false;
                 }
                 wrap.get_next();
@@ -63,7 +63,11 @@ bool parse_ipv4_address(const std::string& str){
 }
 
 bool parse_ipv4_subnet_mask(const std::string& str){
-    //ToDo
+    WrapperForParsing wrap(str);
+    int mask = parse_number(wrap);
+    if (mask < 0 || mask > 32){
+        return false;
+    }
     return true;
 }
 
@@ -138,7 +142,7 @@ void Command::parse_fixed_word(WrapperForParsing& wrap){
         wrap.get_next();
     }
     CommandElement new_command_element(CommandElementType::FIXED_WORD, word);
-    _elements.push_back(new_command_element);
+    elements.push_back(new_command_element);
 }
 
 std::map<std::string, CommandElementType> str_to_element_type_map{
@@ -169,7 +173,7 @@ void Command::parse_variable_element(WrapperForParsing& wrap){
         throw std::runtime_error("Ошибка парсинга шаблона команды: неизвестный вариативный элемент <" + variable_element + ">");
     }
     CommandElement new_element(iter->second, "");
-    _elements.push_back(new_element);
+    elements.push_back(new_element);
     if (wrap.ch != '>'){
         throw std::runtime_error("Ошибка парсинга шаблона команды: ожидалось <");
     }
@@ -194,8 +198,8 @@ void Command::parse_pattern(WrapperForParsing& wrap){
 }
 
 
-Command::Command(const std::string& pattern, const std::vector<CommandDescription>& descriptions)
-    :   _descriptions(descriptions)
+Command::Command(const std::string& pattern, const std::vector<CommandDescription>& descriptions, command_handler handler)
+    :   descriptions(descriptions), handler(handler)
 {
     WrapperForParsing wrap(pattern);
     parse_pattern(wrap);
@@ -212,25 +216,29 @@ std::vector<Command> all_commands = {
         {
             {Language::Russian, "version", "показать версию ПО Клеврет"},
             {Language::English, "version", "show Klevret software version"}
-        }
+        },
+        cmd_version
     },
     {
         "ip show",
         {
 
-        }
+        },
+        blank
     },
     {
         "ip address show",
         {
 
-        }
+        },
+        blank
     },
     {
         "ip address <IPv4Address>",
         {
 
-        }
+        },
+        blank
     }
 
 };
@@ -241,7 +249,7 @@ std::vector<Command> get_all_commands(){
 
 void add_command_to_tree(CommandTree& tree_root, const Command& command){
     CommandTree *current_node = &tree_root;
-    for (const auto& command_element : command._elements){
+    for (const auto& command_element : command.elements){
         bool found = false;
         for (auto& node : current_node->childs){
             if (node.command_element == command_element){
@@ -257,6 +265,9 @@ void add_command_to_tree(CommandTree& tree_root, const Command& command){
             current_node = &(current_node->childs.at(current_node->childs.size() - 1));
         }
     }
+    CommandTree handler;
+    handler.command_element.handler = command.handler;
+    current_node->childs.push_back(handler);
 }
 
 CommandTree create_command_tree(){
