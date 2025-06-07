@@ -8,6 +8,7 @@ class IPv4Address{
 public:
     IPv4Address();
     IPv4Address(const std::string& ip);
+    std::string to_string() const;
 private:
     std::array<uint8_t, 4> _data;
 };

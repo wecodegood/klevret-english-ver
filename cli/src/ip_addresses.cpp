@@ -29,6 +29,14 @@ IPv4Address::IPv4Address(const std::string& ip){
     }
 }
 
+
+std::string IPv4Address::to_string() const{
+    return std::to_string(_data.at(0))
+        + "." + std::to_string(_data.at(1))
+        + "." + std::to_string(_data.at(2))
+        + "." + std::to_string(_data.at(3));
+}
+
 IPv6Address::IPv6Address() : _data{0}{
 
 }

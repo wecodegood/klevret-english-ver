@@ -238,7 +238,7 @@ std::vector<Command> all_commands = {
         {
 
         },
-        blank
+        cmd_ip_address_ipv4
     }
 
 };
