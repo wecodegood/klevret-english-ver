@@ -25,7 +25,8 @@ IPv4Address IPv4Address::from_big_endian_bytes(std::vector<uint8_t>::iterator be
 int parse_octet(WrapperForParsing &wrap){
     size_t octet = 0;
     while (wrap.ch >= '0' && wrap.ch <= '9'){
-        octet = octet * 10 + (wrap.ch + '0');
+        octet = octet * 10 + (wrap.ch - '0');
+        wrap.get_next();
     }
     if (octet > 255){
         throw std::runtime_error("Ошибка парсинга IP-адреса, октет не может быть больше 255");
@@ -35,9 +36,9 @@ int parse_octet(WrapperForParsing &wrap){
 
 IPv4Address::IPv4Address(std::string ip_addr){
     WrapperForParsing wrap(ip_addr);
-    for (int i = 0; i < 3; ++i){
+    for (int i = 0; i < 4; ++i){
         _data.at(i) = parse_octet(wrap);
-        if (wrap.ch != '.'){
+        if (i < 3 && wrap.ch != '.'){
             throw std::runtime_error("Ошибка парсинга IP-адреса, ожидалась точка");
         }
         wrap.get_next();
@@ -62,6 +63,15 @@ std::string IPv4Address::to_string() const{
         << std::to_string(_data.at(2)) << "."
         << std::to_string(_data.at(3));
     return ss.str();
+}
+
+
+std::vector<uint8_t> IPv4Address::to_network_data() const{
+    std::vector<uint8_t> result;
+    for (int i = 0; i < IP_V4_ADDRESS_LENGTH; ++i){
+        result.push_back(_data.at(i));
+    }
+    return result;
 }
 
 IPv4SubnetMask IPv4SubnetMask::from_big_endian_bytes(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
@@ -146,4 +156,12 @@ int IPv4SubnetMask::to_prefix() const{
         }
     }
     return prefix;
+}
+
+std::vector<uint8_t> IPv4SubnetMask::to_network_data() const{
+    std::vector<uint8_t> result;
+    for (int i = 0; i < IP_V4_SUBNET_MASK_LENGTH; ++i){
+        result.push_back(_data.at(i));
+    }
+    return result;
 }

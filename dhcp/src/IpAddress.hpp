@@ -16,6 +16,7 @@ public:
     IPv4Address(uint32_t ip_addr);
     static IPv4Address from_big_endian_bytes(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
     std::string to_string() const;
+    std::vector<uint8_t> to_network_data() const;
 private:
     std::array<uint8_t, IP_V4_ADDRESS_LENGTH> _data;   // big endian
 };
@@ -28,6 +29,7 @@ public:
     static IPv4SubnetMask from_prefix(int prefix);
     std::string to_string() const;
     int to_prefix() const;
+    std::vector<uint8_t> to_network_data() const;
 private:
     std::array<uint8_t, IP_V4_SUBNET_MASK_LENGTH> _data;
 };

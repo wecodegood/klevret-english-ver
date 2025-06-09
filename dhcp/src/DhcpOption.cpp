@@ -229,6 +229,90 @@ DhcpOption::DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_
     }
 }
 
+std::vector<uint8_t> dhcp_option_field_real_value_to_network_data(dhcp_option_field_real_value_t value){
+    std::vector<uint8_t> result;
+    if (int32_t *int_value = std::get_if<int32_t>(&value)){
+        uint8_t *ptr = (uint8_t*)int_value;
+        for (int i = 0; i < 4; ++i){
+            result.push_back(*ptr);
+            ptr++;
+        }
+        return result;
+    }
+    if (uint32_t *uint_value = std::get_if<uint32_t>(&value)){
+        uint8_t *ptr = (uint8_t*)uint_value;
+        for (int i = 0; i < 4; ++i){
+            result.push_back(*ptr);
+            ptr++;
+        }
+        return result;
+    }
+    if (uint16_t *uint_value = std::get_if<uint16_t>(&value)){
+        uint8_t *ptr = (uint8_t*)uint_value;
+        for (int i = 0; i < 2; ++i){
+            result.push_back(*ptr);
+            ptr++;
+        }
+        return result;
+    }
+    if (uint8_t *uint_value = std::get_if<uint8_t>(&value)){
+        result.push_back(*uint_value);
+        return result;
+    }
+    if (std::vector<uint8_t> *vector_value = std::get_if<std::vector<uint8_t>>(&value)){
+        result.insert(result.cend(), vector_value->begin(), vector_value->end());
+        return result;
+    }
+    if (std::basic_string<uint8_t>*string_value = std::get_if<std::basic_string<uint8_t>>(&value)){
+        result.insert(result.cend(), string_value->begin(), string_value->end());
+        return result;
+    }
+    if (IPv4Address*ip_value = std::get_if<IPv4Address>(&value)){
+        auto ip_addr_data = ip_value->to_network_data();
+        result.insert(result.cend(), ip_addr_data.begin(), ip_addr_data.end());
+        return result;
+    }
+    if (IPv4SubnetMask*mask_value = std::get_if<IPv4SubnetMask>(&value)){
+        auto mask_data = mask_value->to_network_data();
+        result.insert(result.cend(), mask_data.begin(), mask_data.end());
+        return result;
+    }
+    if (std::pair<IPv4Address, IPv4SubnetMask>*ip_and_mask_value = std::get_if<std::pair<IPv4Address, IPv4SubnetMask>>(&value)){
+        auto ip_data = ip_and_mask_value->first.to_network_data();
+        auto mask_data = ip_and_mask_value->second.to_network_data();
+        result.insert(result.cend(), ip_data.begin(), ip_data.end());
+        result.insert(result.cend(), mask_data.begin(), mask_data.end());
+        return result;
+    }
+    if (std::pair<IPv4Address, IPv4Address>*ip_and_ip_data = std::get_if<std::pair<IPv4Address, IPv4Address>>(&value)){
+        auto ip1 = ip_and_ip_data->first.to_network_data();
+        auto ip2 = ip_and_ip_data->second.to_network_data();
+        result.insert(result.cend(), ip1.begin(), ip1.end());
+        result.insert(result.cend(), ip2.begin(), ip2.end());
+        return result;
+    }
+}
+
+std::vector<uint8_t> DhcpOption::to_network_data() const{
+    if (description.code == 0){
+        return {0};
+    }
+    if (description.code == 255){
+        return {255};
+    }
+    std::vector<uint8_t> result;
+    result.push_back(description.code);
+    if (description.payload_length == VARIABLE_DHCP_OPTION_LENGTH){
+        result.push_back(real_payload_length);
+    } else {
+        result.push_back(description.payload_length);
+    }
+    for (auto& value : real_values){
+        auto value_data = dhcp_option_field_real_value_to_network_data(value);
+        result.insert(result.cend(), value_data.begin(), value_data.end());
+    }
+    return result;
+}
 
 void DhcpOption::process_vendor_specific_field(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
     std::vector<uint8_t>value(begin, end);

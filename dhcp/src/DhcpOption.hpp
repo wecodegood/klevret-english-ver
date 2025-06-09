@@ -87,6 +87,7 @@ public:
     int64_t real_payload_length;
     DhcpOptionDescription description;
     std::vector<dhcp_option_field_real_value_t> real_values;
+    std::vector<uint8_t> to_network_data() const;
 private:
     void process_vendor_specific_field(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
     void process_byte_array(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);

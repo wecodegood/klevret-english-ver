@@ -52,7 +52,7 @@ std::string MacAddress::to_string() const{
 chaddr_t MacAddress::to_chaddr(){
     chaddr_t result;
     result.fill(0);
-    for (int i = 0; i < DHCP_HARDWARE_ADDRESS_MAX_LENGTH; ++i){
+    for (int i = 0; i < MAC_ADDRESS_LENGTH; ++i){
         result.at(i) = data.at(i);
     }
     return result;

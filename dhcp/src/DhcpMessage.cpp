@@ -84,6 +84,46 @@ DhcpMessage::DhcpMessage(std::vector<uint8_t> data)
 }
 
 std::vector<uint8_t> DhcpMessage::to_network_data() {
-
-    return {};
+    std::vector<uint8_t> result;
+    result.push_back(static_cast<uint8_t>(op));
+    result.push_back(static_cast<uint8_t>(htype));
+    result.push_back(hlen);
+    result.push_back(hops);
+    result.push_back((int)(xid >> 24));
+    result.push_back((int)((xid >> 16) & 0xFF));
+    result.push_back((int)((xid >> 8) & 0xFF));
+    result.push_back((int)((xid) & 0xFF));
+    result.push_back((int)((secs >> 8) & 0xFF));
+    result.push_back((int)((secs) & 0xFF));
+    result.push_back((int)((flags >> 8) & 0xFF));
+    result.push_back((int)(flags & 0xFF));
+    auto ciaddr_data = ciaddr.to_network_data();
+    result.insert(result.cend(), ciaddr_data.begin(), ciaddr_data.end());
+    auto yiaddr_data = yiaddr.to_network_data();
+    result.insert(result.cend(), yiaddr_data.begin(), yiaddr_data.end());
+    auto siaddr_data = siaddr.to_network_data();
+    result.insert(result.cend(), siaddr_data.begin(), siaddr_data.end());
+    auto giaddr_data = giaddr.to_network_data();
+    result.insert(result.cend(), giaddr_data.begin(), giaddr_data.end());
+    auto chaddr_data = chaddr.get()->to_chaddr();
+    result.insert(result.cend(), chaddr_data.begin(), chaddr_data.end());
+    std::array<uint8_t, 64> sname_data;
+    sname_data.fill(0);
+    result.insert(result.cend(), sname_data.begin(), sname_data.end());
+    std::array<uint8_t, 128> file_data;
+    file_data.fill(0);
+    result.insert(result.cend(), file_data.begin(), file_data.end());
+    if (options.size() == 0){
+        return result;
+    }
+    result.push_back(99);
+    result.push_back(130);
+    result.push_back(83);
+    result.push_back(99);
+    for (auto& option : options){
+        auto opt_data = option.to_network_data();
+        result.insert(result.cend(), opt_data.begin(), opt_data.end());
+    }
+    result.push_back(255); // end option
+    return result;
 }
