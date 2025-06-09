@@ -242,8 +242,10 @@ void DhcpOption::process_byte_array(std::vector<uint8_t>::iterator begin, std::v
     {
         throw std::runtime_error("длина опции меньше чем минимальная");
     }
-    if (description.payload_length != (int64_t)byte_array.size()){
-        throw std::runtime_error{"несовпадение длины"};
+    if (description.payload_length != VARIABLE_DHCP_OPTION_LENGTH && description.payload_length != (int64_t)byte_array.size()){
+        throw std::runtime_error{"несовпадение длины, ожидаемая длина опции: "
+            + std::to_string(description.payload_length) + ", фактическая длина опции: "
+            + std::to_string(byte_array.size())};
     }
     real_values.push_back(byte_array);
 }

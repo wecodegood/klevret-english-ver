@@ -1,10 +1,12 @@
 #include <iostream>
 #include "DhcpMessage.hpp"
 #include "NetworkInterface.hpp"
+#include "UdpListener.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
 
 // здесь можно производить отладку
 int main(){
@@ -16,7 +18,7 @@ int main(){
                 << "  " << iface.mac_address.to_string() <<"\n";
         }
     }
-    std::vector<uint8_t> dhcp_message_data = {
+    std::vector<uint8_t> test_dhcp_message_data = {
         0x02, 0x01, 0x06, 0x00, // op, htype, hlen, hops
         0x07, 0xd0, 0xd9, 0x0d, // xid
         0x00, 0x01, 0x00, 0x00, // secs (2), flags (2)
@@ -50,10 +52,21 @@ int main(){
         0x0c, 0x0c, 0x69, 0x74, 0x2d, 0x6e, 0x6f, 0x74, 0x2d, 0x61, 0x2d, 0x70, 0x72, 0x6f, // (12) Hostname
         0xff
     };
-    DhcpMessage dhcp_message(dhcp_message_data);
+    DhcpMessage test_dhcp_message(test_dhcp_message_data);
+    UdpServer udp_listener(67);
     std::cout << "DHCP server started\n";
-    std::cout << dhcp_message.yiaddr.to_string() << "\n";
-    for (auto option : dhcp_message.options){
-        std::cout << option.description.code << "\n";
+    //wireshark filter udp.payload == 64:63:62:61:60:5f:5e:5d:5c:5b:5a
+    udp_listener.send_to({100, 99, 98, 97, 96,95,94,93,92,91,90});
+    while(true){
+        if (udp_listener.is_input_queue_blank()){
+            continue;
+        }
+        auto packet = udp_listener.get_next_datagram();
+        std::cout << "received datagram length " << packet.size() << "\n";
+        DhcpMessage dhcp_packet(packet);
+        std::cout << dhcp_packet.yiaddr.to_string() << "\n";
+        for (auto option : dhcp_packet.options){
+            std::cout << option.description.code << "\n";
+        }
     }
 }
