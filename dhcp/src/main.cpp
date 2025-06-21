@@ -7,6 +7,7 @@
 #include <boost/asio.hpp>
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include "AddressPool.hpp"
 
 enum class Option53MessageType{
     DHCPDISCOVER = 1,
@@ -19,7 +20,7 @@ enum class Option53MessageType{
     DHCPINFORM = 8
 };
 
-DhcpMessage make_offer(const DhcpMessage& packet){
+DhcpMessage make_offer(const DhcpMessage& packet, const IPv4Address& ip){
     DhcpMessage offer;
     offer.op = DhcpMessageType::BOOTREPLY;
     offer.htype = HardwareAddressType::Ethernet_10Mb;
@@ -27,7 +28,7 @@ DhcpMessage make_offer(const DhcpMessage& packet){
     offer.hops = 0;
     offer.xid = packet.xid;
     offer.ciaddr = IPv4Address(0);
-    offer.yiaddr = IPv4Address("172.18.1.41");
+    offer.yiaddr = ip;
     offer.siaddr = IPv4Address("172.18.1.1");
     offer.giaddr = IPv4Address(0);
     auto l2_address = dynamic_cast<MacAddress*>(packet.chaddr.get());
@@ -50,7 +51,7 @@ DhcpMessage make_offer(const DhcpMessage& packet){
     return offer;
 }
 
-DhcpMessage make_acknowledge(const DhcpMessage& packet){
+DhcpMessage make_acknowledge(const DhcpMessage& packet, const IPv4Address& ip){
     DhcpMessage acknowledge;
     acknowledge.op = DhcpMessageType::BOOTREPLY;
     acknowledge.htype = HardwareAddressType::Ethernet_10Mb;
@@ -58,7 +59,7 @@ DhcpMessage make_acknowledge(const DhcpMessage& packet){
     acknowledge.hops = 0;
     acknowledge.xid = packet.xid;
     acknowledge.ciaddr = IPv4Address(0);
-    acknowledge.yiaddr = IPv4Address("172.18.1.41");
+    acknowledge.yiaddr = ip;
     acknowledge.siaddr = IPv4Address("172.18.1.1");
     acknowledge.giaddr = IPv4Address(0);
     auto l2_address = dynamic_cast<MacAddress*>(packet.chaddr.get());
@@ -130,6 +131,8 @@ int main(){
     std::cout << "DHCP server started\n";
     //wireshark filter udp.payload == 64:63:62:61:60:5f:5e:5d:5c:5b:5a
     //udp_listener.send_to({100, 99, 98, 97, 96,95,94,93,92,91,90});
+    AddressPool pool({"10.10.0.1"},{"10.10.0.10"});
+    std::map<uint32_t, IPv4Address> xids;
     while(true){
         if (udp_listener.is_input_queue_blank()){
             continue;
@@ -150,12 +153,13 @@ int main(){
             std::cout << "opt 53: " << (int)std::get<uint8_t>(option53->real_values.at(0)) << "\n";
             Option53MessageType msg_type = static_cast<Option53MessageType>(std::get<uint8_t>(option53->real_values.at(0)));
             if (msg_type == Option53MessageType::DHCPDISCOVER){
-                DhcpMessage offer = make_offer(dhcp_packet);
-                std::cout << "длина офера в байтах: " << offer.to_network_data().size() << "\n";
+                MacAddress* mac = dynamic_cast<MacAddress*>(dhcp_packet.chaddr.get());
+                xids[dhcp_packet.xid] = pool.get_address(*mac);
+                DhcpMessage offer = make_offer(dhcp_packet, xids[dhcp_packet.xid]);
                 udp_listener.send_to(offer.to_network_data());
                 std::cout << "отправил DHCPOFFER\n";
             } else if (msg_type == Option53MessageType::DHCPREQUEST){
-                DhcpMessage acknowledge = make_acknowledge(dhcp_packet);
+                DhcpMessage acknowledge = make_acknowledge(dhcp_packet, xids[dhcp_packet.xid]);
                 udp_listener.send_to(acknowledge.to_network_data());
                 std::cout << "отправил DHCPACK\n";
             }

@@ -6,6 +6,24 @@
 #include <string>
 #include <bit>
 
+template<std::integral T, std::size_t SIZE>
+T network_array_to_host_endian(std::array<uint8_t, SIZE> arr) {
+    if (arr.size() != sizeof(T)) {
+        throw std::runtime_error(
+            "Ожидалось байт - " + std::to_string(sizeof(T)) + "." +
+            "Получено байт - " + std::to_string(arr.size()) + "."
+        );
+    }
+
+    T result = std::bit_cast<T>(arr);
+
+    if (std::endian::native == std::endian::little) {
+        result = std::byteswap(result);
+    }
+
+    return result;
+}
+
 template<std::integral T>
 T network_to_host_endian(
     const std::vector<uint8_t>::const_iterator begin,
@@ -36,4 +54,22 @@ T network_to_host_endian(T value) {
         return std::byteswap(value);
     }
     return value;
+}
+
+template<std::integral T, std::size_t SIZE>
+std::array<uint8_t, SIZE> host_to_network_endian_array(T value){
+    if (SIZE != sizeof(T)) {
+        throw std::runtime_error(
+            "Ожидалось байт - " + std::to_string(sizeof(T)) + "." +
+            "Получено байт - " + std::to_string(SIZE) + "."
+        );
+    }
+    if (std::endian::native == std::endian::little) {
+        value = std::byteswap(value);
+    }
+    std::array<uint8_t, SIZE> result = std::bit_cast<std::array<uint8_t, SIZE>>(value);
+
+
+
+    return result;
 }

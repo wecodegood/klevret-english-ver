@@ -3,7 +3,8 @@
 #include <sstream>
 #include "WrapperForParsing.hpp"
 #include <algorithm>
-
+#include <iostream>
+#include "endians.hpp"
 
 IPv4Address IPv4Address::from_big_endian_bytes(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
     IPv4Address ip_address(0);
@@ -34,6 +35,13 @@ int parse_octet(WrapperForParsing &wrap){
     return octet;
 }
 
+
+IPv4Address::IPv4Address()
+    :   IPv4Address(0)
+{
+
+}
+
 IPv4Address::IPv4Address(std::string ip_addr){
     WrapperForParsing wrap(ip_addr);
     for (int i = 0; i < 4; ++i){
@@ -49,10 +57,7 @@ IPv4Address::IPv4Address(std::string ip_addr){
 }
 
 IPv4Address::IPv4Address(uint32_t ip_addr){
-    _data.at(3) = ip_addr & 0xFFu;
-    _data.at(2) = (ip_addr >> 8) & 0xFFu;
-    _data.at(1) = (ip_addr >> 16) & 0xFFu;
-    _data.at(0) = (ip_addr >> 24) & 0xFFu;
+    _data = host_to_network_endian_array<uint32_t, IP_V4_ADDRESS_LENGTH>(ip_addr);
 }
 
 
@@ -74,6 +79,36 @@ std::vector<uint8_t> IPv4Address::to_network_data() const{
     return result;
 }
 
+
+IPv4Address IPv4Address::operator++(int){
+    // вообще правильно как тут
+    IPv4Address old = *this; // copy old value
+    _increment();
+    return old;    // return old value
+}
+
+
+bool IPv4Address::operator==(const IPv4Address& other){
+    return _data == other._data;
+}
+
+
+
+bool operator<(const IPv4Address& lhs, const IPv4Address rhs){
+    return lhs._to_uint32_t() < rhs._to_uint32_t();
+}
+
+void IPv4Address::_increment(){
+    uint32_t ip_data = _to_uint32_t();
+    ip_data++;
+    _data = host_to_network_endian_array<uint32_t, IP_V4_ADDRESS_LENGTH>(ip_data);
+}
+
+
+uint32_t IPv4Address::_to_uint32_t() const{
+    return network_array_to_host_endian<uint32_t, IP_V4_ADDRESS_LENGTH>(_data);
+}
+
 IPv4SubnetMask IPv4SubnetMask::from_big_endian_bytes(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end){
     IPv4SubnetMask mask(0);
     auto iter = begin;
@@ -90,10 +125,7 @@ IPv4SubnetMask IPv4SubnetMask::from_big_endian_bytes(std::vector<uint8_t>::itera
 }
 
 IPv4SubnetMask::IPv4SubnetMask(uint32_t mask){
-    _data.at(3) = mask & 0xFFu;
-    _data.at(2) = (mask >> 8) & 0xFFu;
-    _data.at(1) = (mask >> 16) & 0xFFu;
-    _data.at(0) = (mask >> 24) & 0xFFu;
+    _data = host_to_network_endian_array<uint32_t, IP_V4_SUBNET_MASK_LENGTH>(mask);
 }
 
 

@@ -5,6 +5,7 @@
 #include <array>
 #include <string>
 #include <variant>
+#include "endians.hpp"
 
 
 constexpr int IP_V4_ADDRESS_LENGTH = 4;
@@ -12,14 +13,23 @@ constexpr int IP_V4_SUBNET_MASK_LENGTH = 4;
 
 class IPv4Address{
 public:
+    IPv4Address();
     IPv4Address(std::string ip_addr);
     IPv4Address(uint32_t ip_addr);
     static IPv4Address from_big_endian_bytes(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
     std::string to_string() const;
     std::vector<uint8_t> to_network_data() const;
+    IPv4Address operator++(int);
+    bool operator==(const IPv4Address& other);
+    friend bool operator<(const IPv4Address& lhs, const IPv4Address rhs);
 private:
+    void _increment();
+    uint32_t _to_uint32_t() const;
     std::array<uint8_t, IP_V4_ADDRESS_LENGTH> _data;   // big endian
 };
+
+
+bool operator<(const IPv4Address& lhs, const IPv4Address rhs);
 
 class IPv4SubnetMask{
 public:

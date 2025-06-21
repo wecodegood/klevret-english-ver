@@ -57,3 +57,16 @@ chaddr_t MacAddress::to_chaddr(){
     }
     return result;
 }
+
+
+bool operator<(const MacAddress& lhs, const MacAddress& rhs){
+    for (int i = 0; i < MAC_ADDRESS_LENGTH; ++i){
+        if (lhs.data[i] > rhs.data[i]){
+            return false;
+        }
+        if (lhs.data[i] < rhs.data[i]){
+            return true;
+        }
+    }
+    return false;
+}

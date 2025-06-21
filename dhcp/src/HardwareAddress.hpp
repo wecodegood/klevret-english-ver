@@ -75,7 +75,11 @@ public:
     static MacAddress* make_ptr_from_big_endian_bytes(std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
     std::string to_string() const;
     virtual chaddr_t to_chaddr() override;
+    friend bool operator<(const MacAddress& lhs, const MacAddress& rhs);
 
     const static uint8_t address_length = MAC_ADDRESS_LENGTH;
     std::array<uint8_t, MAC_ADDRESS_LENGTH> data;
 };
+
+
+bool operator<(const MacAddress& lhs, const MacAddress& rhs);
