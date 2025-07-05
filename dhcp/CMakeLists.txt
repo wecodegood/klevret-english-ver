@@ -47,6 +47,7 @@ target_link_libraries(${KLEVRET_DHCP_TARGET}
         Boost::asio
         Boost::algorithm
         Boost::property_tree
+        Boost::json
 )
 
 # ~~~ тесты ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>

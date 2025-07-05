@@ -130,3 +130,12 @@ bool AddressPool::is_address_excluded(const IPv4Address& ip) const{
 bool AddressPool::is_address_cached(const MacAddress& mac) const{
     return _cache.find(mac) != _cache.end();
 }
+
+
+void AddressPool::set_option(DhcpOption option){
+    _options[option.description.code] = option;
+}
+
+void AddressPool::remove_option(int option_number){
+    _options.erase(option_number);
+}

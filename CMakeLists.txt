@@ -66,6 +66,7 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrepareBoostModule.cmake")
 PrepareBoostModule("asio" "1.87.0")
 PrepareBoostModule("algorithm" "1.87.0")
 PrepareBoostModule("property_tree" "1.87.0")
+PrepareBoostModule("json" "1.87.0")
 
 # ~~~ добавление компонентов ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>
 

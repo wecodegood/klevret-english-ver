@@ -83,6 +83,7 @@ extern std::map<int, DhcpOptionDescription> options_descriptions;
 
 class DhcpOption{
 public:
+    DhcpOption()=default;
     DhcpOption(int code, int64_t real_payload_length, std::vector<uint8_t>::iterator begin, std::vector<uint8_t>::iterator end);
     int64_t real_payload_length;
     DhcpOptionDescription description;

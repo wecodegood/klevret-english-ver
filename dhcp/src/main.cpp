@@ -39,13 +39,8 @@ DhcpMessage make_offer(const DhcpMessage& packet, const IPv4Address& ip){
     offer.options.push_back(DhcpOption(1, 4, option1_data.begin(), option1_data.end()));
     std::vector<uint8_t> option3_data{172, 18, 1, 1};
     offer.options.push_back(DhcpOption(3, 4, option3_data.begin(), option3_data.end()));
-    uint32_t lease_time = 86400;
-    std::vector<uint8_t> option51_data{
-        (uint8_t)(lease_time >> 24),
-        (uint8_t)((lease_time << 8) >> 24),
-        (uint8_t)((lease_time << 16) >> 24),
-        (uint8_t)((lease_time & 0xFF))
-    };
+    std::array<uint8_t, 4> lease_time = host_to_network_endian_array<uint32_t, 4>(86400);
+    std::vector<uint8_t> option51_data{lease_time.begin(), lease_time.end()};
     offer.options.push_back(DhcpOption(51, 4, option51_data.begin(), option51_data.end()));
 
     return offer;
@@ -131,7 +126,7 @@ int main(){
     std::cout << "DHCP server started\n";
     //wireshark filter udp.payload == 64:63:62:61:60:5f:5e:5d:5c:5b:5a
     //udp_listener.send_to({100, 99, 98, 97, 96,95,94,93,92,91,90});
-    AddressPool pool({"10.10.0.1"},{"10.10.0.10"});
+    AddressPool pool({"192.168.1.10"},{"192.168.1.20"});
     std::map<uint32_t, IPv4Address> xids;
     while(true){
         if (udp_listener.is_input_queue_blank()){
