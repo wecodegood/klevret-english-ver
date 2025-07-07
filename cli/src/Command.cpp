@@ -198,8 +198,9 @@ void Command::parse_pattern(WrapperForParsing& wrap){
 }
 
 
-Command::Command(const std::string& pattern, const std::vector<CommandDescription>& descriptions, command_handler handler)
-    :   descriptions(descriptions), handler(handler)
+Command::Command(KlevretComponent klevret_component, const std::string& pattern,
+    const std::vector<CommandDescription>& descriptions, command_handler handler)
+    :   descriptions(descriptions), handler(handler), klevret_component(klevret_component)
 {
     WrapperForParsing wrap(pattern);
     parse_pattern(wrap);
@@ -212,6 +213,7 @@ Command::Command(const std::string& pattern, const std::vector<CommandDescriptio
 
 std::vector<Command> all_commands = {
     {
+        KlevretComponent::CLI,
         "version",
         {
             {Language::Russian, "version", "показать версию ПО Клеврет"},
@@ -220,6 +222,7 @@ std::vector<Command> all_commands = {
         cmd_version
     },
     {
+        KlevretComponent::DHCP,
         "ip show",
         {
 
@@ -227,6 +230,7 @@ std::vector<Command> all_commands = {
         blank
     },
     {
+        KlevretComponent::DHCP,
         "ip address show",
         {
 
@@ -234,12 +238,21 @@ std::vector<Command> all_commands = {
         blank
     },
     {
+        KlevretComponent::DHCP,
         "ip address <IPv4Address>",
         {
 
         },
         cmd_ip_address_ipv4
-    }
+    },
+    {
+        KlevretComponent::DHCP,
+        "dhcp pool create <IPv4Address> <IPv4Address>",
+        {
+
+        },
+        cmd_dhcp_pool_create
+    },
 
 };
 

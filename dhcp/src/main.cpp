@@ -8,6 +8,7 @@
 #include <boost/algorithm/algorithm.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "AddressPool.hpp"
+#include "api_server.hpp"
 
 enum class Option53MessageType{
     DHCPDISCOVER = 1,
@@ -124,6 +125,7 @@ int main(){
     DhcpMessage test_dhcp_message(test_dhcp_message_data);
     UdpServer udp_listener(67);
     std::cout << "DHCP server started\n";
+    ApiServer::instance().start();
     //wireshark filter udp.payload == 64:63:62:61:60:5f:5e:5d:5c:5b:5a
     //udp_listener.send_to({100, 99, 98, 97, 96,95,94,93,92,91,90});
     AddressPool pool({"192.168.1.10"},{"192.168.1.20"});

@@ -58,13 +58,20 @@ struct CommandDescription{
     std::string description;
 };
 
+enum class KlevretComponent{
+    CLI,
+    CORE,
+    DHCP,
+};
 
 class Command{
 public:
-    Command(const std::string& pattern, const std::vector<CommandDescription>& descriptions, command_handler handler);
+    Command(KlevretComponent klevret_component, const std::string& pattern,
+        const std::vector<CommandDescription>& descriptions, command_handler handler);
     std::vector<CommandElement> elements;
     std::vector<CommandDescription> descriptions;
     const command_handler handler;
+    KlevretComponent klevret_component;
 private:
     void parse_pattern(WrapperForParsing& wrap);
     void parse_pattern_element(WrapperForParsing& wrap);
