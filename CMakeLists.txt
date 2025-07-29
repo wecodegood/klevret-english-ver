@@ -20,6 +20,7 @@ endif()
 option(KLEVRET_BUILD_CORE "Сборка ядра" ON)
 option(KLEVRET_BUILD_DHCP "Сборка dhcp" ON)
 option(KLEVRET_BUILD_CLI "Сборка консоли" ON)
+option(KLEVRET_BUILD_COMMON "Сборка общих библиотек" OFF) # хардкодом собираются
 
 # Тесты
 option(KLEVRET_BUILD_TESTS "Сборка тестов" OFF)
@@ -74,6 +75,7 @@ PrepareBoostModule("json" "1.87.0")
 set(KLEVRET_CORE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/core")
 set(KLEVRET_DHCP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dhcp")
 set(KLEVRET_CLI_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cli")
+set(KLEVRET_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/common")
 
 # core
 if(${KLEVRET_BUILD_CORE})
@@ -89,5 +91,13 @@ endif()
 if(${KLEVRET_BUILD_CLI})
     add_subdirectory(${KLEVRET_CLI_PATH})
 endif()
+
+# common
+# cli
+if(${KLEVRET_BUILD_COMMON})
+    #add_subdirectory(${KLEVRET_COMMON_PATH})
+endif()
+
+#
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ >>>

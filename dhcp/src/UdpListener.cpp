@@ -16,7 +16,8 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <iostream>
-#include "Defer.hpp"
+#include "../../common/src/Defer.hpp"
+#include "../../common/src/utils.hpp"
 
 
 UdpServer::UdpServer(int port)
@@ -86,6 +87,7 @@ void UdpServer::send_to(std::vector<uint8_t> data){
     if (raw_socket == -1){
         throw std::runtime_error("Не удалось создать сырой сокет UdpServer::send_to");
     }
+    test();
     Defer close_raw_socket([&](){
         close(raw_socket);
     });

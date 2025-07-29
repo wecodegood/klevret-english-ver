@@ -1,4 +1,4 @@
-# Игнорируем все файлы в корне проекта
+# Игнорируем все файлы в корне компонента
 /*
 
 # Добавляем только необходимые файлы
@@ -6,16 +6,10 @@
 !LICEN[S/C]E*
 
 !.gitignore
-!.gitmodules
-!.gitattributes
 
 !CMakeLists.txt
+!backup.CMakeLists.txt
 
 # Добавляем только необходимые директории
-!/.github/
-!/cmake/
-!/core/
-!/dhcp/
-!/frontend/
-!/cli/
-!/common/
+!/src/
+!/tests/

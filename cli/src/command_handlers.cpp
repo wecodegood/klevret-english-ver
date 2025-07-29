@@ -26,6 +26,7 @@ void check_args_size(const std::stack<CommandElementRealValue>& cmd, int number_
 }
 
 void send_cmd(KlevretComponent klevret_component, const  boost::property_tree::ptree& obj){
+    //ToDo прицепить компонент
     std::stringstream ss;
     boost::property_tree::write_json(ss, obj);
     std::cout << ss.str() << "\n";
@@ -59,6 +60,7 @@ void cmd_ip_address_ipv4(std::stack<CommandElementRealValue>& cmd){
     check_args_size(cmd, 3, "ip address <IPv4Address>");
     IPv4Address ip = std::get<IPv4Address>(cmd.top());
     boost::property_tree::ptree json;
+    json.put("component", "dhcp");
     json.put("cmd", "ip.address");
     json.put("ip", ip.to_string());
     send_cmd(KlevretComponent::CORE, json);

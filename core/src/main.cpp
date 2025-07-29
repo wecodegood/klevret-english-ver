@@ -13,6 +13,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <string>
 #include <sstream>
+#include "../../common/src/TcpListener.hpp"
 
 class TcpServer{
 public:
@@ -78,49 +79,49 @@ private:
         std::cout << "запущен обработчик клиента\n";
         const int BUFFER_SIZE = 1024*10;
         char buffer[BUFFER_SIZE];
-        while (true){
-            int bytes_read = read(client_socket, buffer, BUFFER_SIZE - 1);
-            if (bytes_read > 0) {
-                buffer[bytes_read] = '\0';
-                std::string json_str(buffer);
-                boost::property_tree::ptree pt;
-                std::istringstream iss(json_str);
-                try {
-                    boost::property_tree::read_json(iss, pt);
 
-                    // Доступ к данным
-                    std::string component = pt.get<std::string>("component");
-                    if (component == "dhcp"){
-                        std::cout << "получил команду для DHCP\n";
-                        int client_socket = socket(AF_INET, SOCK_STREAM, 0);
-                        if (client_socket == -1){
-                            throw std::runtime_error("не удалось создать клиентский сокет");
-                        }
-                        sockaddr_in sa;
-                        memset(&sa, 0, sizeof sa);
-                        sa.sin_family = AF_INET;
-                        sa.sin_port = htons(40237);
-                        if (inet_pton(AF_INET, "127.0.0.1", &sa.sin_addr) == -1){
-                            throw std::runtime_error("не удалось преобразовать IP адрес для sockaddr_in");
-                        }
-                        if (connect(client_socket, (sockaddr*)&sa, sizeof sa) == -1){
-                            throw std::runtime_error("не удалось выполнить подключение");
-                        }
-                        int sent_bytes = send(client_socket, json_str.c_str(), json_str.length(), 0);
-                        std::cout << "отправлено байт: " << sent_bytes << "\n";
-                    }
-                } catch (const std::exception& e) {
-                    std::cerr << "Не удалось распарсить json: " << e.what() << std::endl;
-                }
-                // Отправляем ответ
-                //const char* response = "Message received";
-                //write(client_socket, response, strlen(response));
-            }
-        }
     }
 };
 
 int main(){
-    TcpServer tcp_server;
-    tcp_server.join_threads();
+    TcpListener tcp_listener("127.0.0.1", 40236, 5);
+    while (true){
+        if (!tcp_listener.is_empty()) {
+            auto packet = tcp_listener.get_next_packet();
+            std::vector<char> data(packet.begin(), packet.end());
+            std::string json_str(data.data());
+            boost::property_tree::ptree pt;
+            std::istringstream iss(json_str);
+            try {
+                boost::property_tree::read_json(iss, pt);
+
+                // Доступ к данным
+                std::string component = pt.get<std::string>("component");
+                if (component == "dhcp"){
+                    std::cout << "получил команду для DHCP\n";
+                    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+                    if (client_socket == -1){
+                        throw std::runtime_error("не удалось создать клиентский сокет");
+                    }
+                    sockaddr_in sa;
+                    memset(&sa, 0, sizeof sa);
+                    sa.sin_family = AF_INET;
+                    sa.sin_port = htons(40237);
+                    if (inet_pton(AF_INET, "127.0.0.1", &sa.sin_addr) == -1){
+                        throw std::runtime_error("не удалось преобразовать IP адрес для sockaddr_in");
+                    }
+                    if (connect(client_socket, (sockaddr*)&sa, sizeof sa) == -1){
+                        throw std::runtime_error("не удалось выполнить подключение");
+                    }
+                    int sent_bytes = send(client_socket, json_str.c_str(), json_str.length(), 0);
+                    std::cout << "отправлено байт: " << sent_bytes << "\n";
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "Не удалось распарсить json: " << e.what() << std::endl;
+            }
+            // Отправляем ответ
+            //const char* response = "Message received";
+            //write(client_socket, response, strlen(response));
+        }
+    }
 }
