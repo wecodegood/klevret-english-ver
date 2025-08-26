@@ -1,11 +1,62 @@
+#### English:
 
-####english:
+# klevret
 
-to be tranlated and added later, im too lazy to fully translate it, and no im not gonna use ai because i hate it
+The Klevret Project (from Old Slavic "companion") is a suite of programs for computer network administration.
+
+- [ ] DHCP
+- [ ] DNS
+- [ ] File server
+- [ ] RA VPN
+
+JSON will be used as the API. Frontend - Vue.
+
+## Dependencies:
+    boost 1.81
+
+## Build
+
+Requirements:
+
+* CMake >= 3.21
+* C++23 compiler
+
+Build process:
+
+1. Create a directory `build`
+
+    ```sh
+    mkdir build
+    ```
+
+2. Run CMake configuration
+
+    ```sh
+    cmake -S . -B build
+    ```
+
+3. Build the project
+
+    ```sh
+    cmake --build build --config=Release
+    ```
+
+If the build is successful, you will find the executables in `./build/<component>/<configuration>/`, for example `./build/core/Release/core-server`.
+
+## Running the tests
+
+When running CMake configuration (step 2 from "Build"), add `-DKLEVRET_BUILD_TESTS=1`, then build as usual.
+
+If the build is successful, test executables will be located at `./build/<component>/tests/<configuration>/`, for example `./build/dhcp/tests/Debug/dhcp-server-tests`.
+
+## Installation
+
+To be added later (?)
 
 
+---
 
-####russian:
+#### Русский:
 
 # klevret
 
