@@ -1,3 +1,12 @@
+
+####english:
+
+to be tranlated and added later, im too lazy to fully translate it, and no im not gonna use ai because i hate it
+
+
+
+####russian:
+
 # klevret
 
 Проект Клеврет (со старославянского товарищ) - комплекс программ для администрирования компьютерной сети.
